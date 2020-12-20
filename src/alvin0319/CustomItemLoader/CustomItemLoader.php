@@ -71,71 +71,7 @@ class CustomItemLoader extends PluginBase implements Listener{
 
 		foreach($this->getConfig()->get("items", []) as $name => $itemData){
 			$nbt = $this->parseTag($name, $itemData);
-			$packetEntries[] = new ItemComponentPacketEntry($itemData["namespace"], $nbt);
-			/*
-			foreach($needKeys as $key){
-				if(!isset($itemData[$key])){
-					$this->getLogger()->critical("Failed to find {$key}, skipping...");
-					continue 2;
-				}
-			}
-			$id = (int) $itemData["id"];
-			$meta = (int) $itemData["meta"];
-
-			$namespace = (string) $itemData["namespace"];
-
-			$runtimeId = $id + ($id > 0 ? 5000 : -5000);
-			$coreToNetValues[$id] = $runtimeId;
-			$netToCoreValues[$runtimeId] = $id;
-
-			$itemTypesValues[] = $entry = new ItemTypeEntry($namespace, $runtimeId, true);
-
-			ItemFactory::registerItem((($itemData["durable"] ?? false) ? new CustomDurableItem($id, $meta, explode(":", $namespace)[1], $itemData["max_durability"]) : new CustomItem($id, $meta, explode(":", $namespace)[1], $itemData["properties"]["max_stack_size"] ?? 64)));
-			$packetEntries[] = new ItemComponentPacketEntry($itemData["namespace"], new CompoundTag("", [
-				new CompoundTag("components", [
-					new CompoundTag("item_properties", [
-						new ByteTag("allow_off_hand", (int) ($itemData["properties"]["allow_offhand"] ?? false)),
-						new IntTag("max_stack_size", (int) ($itemData["properties"]["max_stack_size"] ?? 64)),
-						new ByteTag("hand_equipped", (int) ($itemData["properties"]["hand_equipped"] ?? true)),
-						new ByteTag("animates_in_toolbar", 1)
-					]),
-					new CompoundTag("minecraft:icon", [
-						new StringTag("texture", $itemData["properties"]["texture"])
-					]),
-				]),
-				new ShortTag("minecraft:identifier", $runtimeId),
-				new CompoundTag("minecraft:display_name", [
-					new StringTag("value", $itemData["name"])
-				]),
-				new CompoundTag("minecraft:digger", [
-					new CompoundTag("destroy_speeds", [
-						new DoubleTag("value", 10)
-					]),
-					new ByteTag("on_dig", 1),
-					new ByteTag("use_efficiency", 1)
-				]),
-				new CompoundTag("minecraft:on_use", [
-					new ByteTag("on_use", 1)
-				]),
-				new CompoundTag("minecraft:on_use_on", [
-					new ByteTag("on_use_on", 1)
-				]),
-				new CompoundTag("minecraft:durability", [
-					new ShortTag("damage_chance", 1),
-					new ShortTag("max_durability", 64)
-				]),
-				new CompoundTag("description", [
-					new StringTag("identifier", $namespace),
-					new StringTag("category", "Items")
-				]),
-				new CompoundTag("minecraft:wearable", [
-					new ByteTag("dispensable", 1),
-					new CompoundTag("slot", [
-						new ByteTag("slot.armor.legs", 1)
-					])
-				])
-			]));
-			*/
+			$packetEntries[] = new ItemComponentPacketEntry($itemData["namespace"], $nbt)
 		}
 
 		$simpleNetToCoreMap->setValue(ItemTranslator::getInstance(), $this->netToCoreValues);
