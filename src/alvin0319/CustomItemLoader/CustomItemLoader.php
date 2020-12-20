@@ -42,11 +42,7 @@ class CustomItemLoader extends PluginBase implements Listener{
 	public function onEnable() : void{
 		$this->getServer()->getPluginManager()->registerEvents($this, $this);
 		$this->saveDefaultConfig();
-		$needKeys = [
-			"id",
-			"meta",
-			"namespace"
-		];
+
 		$ref = new ReflectionClass(ItemTranslator::class);
 		$simpleCoreToNetMap = $ref->getProperty("simpleCoreToNetMapping");
 		$simpleNetToCoreMap = $ref->getProperty("simpleNetToCoreMapping");
