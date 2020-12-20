@@ -71,7 +71,7 @@ class CustomItemLoader extends PluginBase implements Listener{
 
 		foreach($this->getConfig()->get("items", []) as $name => $itemData){
 			$nbt = $this->parseTag($name, $itemData);
-			$packetEntries[] = new ItemComponentPacketEntry($itemData["namespace"], $nbt)
+			$packetEntries[] = new ItemComponentPacketEntry($itemData["namespace"], $nbt);
 		}
 
 		$simpleNetToCoreMap->setValue(ItemTranslator::getInstance(), $this->netToCoreValues);
