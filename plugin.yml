@@ -1,4 +1,4 @@
-name: CustomItem
+name: CustomItemLoader
 author: alvin0319
 main: alvin0319\CustomItemLoader\CustomItemLoader
 version: 1.0.0
