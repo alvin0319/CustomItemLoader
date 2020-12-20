@@ -1,5 +1,5 @@
 name: CustomItem
 author: alvin0319
-main: alvin0319\CustomItem\CustomItemLoader
+main: alvin0319\CustomItemLoader\CustomItemLoader
 version: 1.0.0
 api: 3.0.0
