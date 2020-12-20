@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace alvin0319\CustomItemLoader;
 
+use alvin0319\CustomItemLoader\command\ResourcePackCreateCommand;
 use alvin0319\CustomItemLoader\item\CustomDurableItem;
 use alvin0319\CustomItemLoader\item\CustomItem;
 use pocketmine\event\Listener;
@@ -24,12 +25,17 @@ use pocketmine\network\mcpe\protocol\types\Experiments;
 use pocketmine\network\mcpe\protocol\types\ItemComponentPacketEntry;
 use pocketmine\network\mcpe\protocol\types\ItemTypeEntry;
 use pocketmine\plugin\PluginBase;
+use pocketmine\utils\SingletonTrait;
 use ReflectionClass;
 
 use function assert;
 use function is_array;
+use function is_dir;
+use function mkdir;
 
 class CustomItemLoader extends PluginBase implements Listener{
+	use SingletonTrait;
+
 	/** @var ItemComponentPacket */
 	protected $packet;
 
@@ -39,9 +45,19 @@ class CustomItemLoader extends PluginBase implements Listener{
 
 	protected $itemTypeEntries = [];
 
+	public function onLoad() : void{
+		self::setInstance($this);
+	}
+
 	public function onEnable() : void{
 		$this->getServer()->getPluginManager()->registerEvents($this, $this);
 		$this->saveDefaultConfig();
+
+		if(!is_dir($this->getResourcePackFolder())){
+			mkdir($this->getResourcePackFolder());
+		}
+
+		$this->getServer()->getCommandMap()->register("customitem", new ResourcePackCreateCommand());
 
 		$ref = new ReflectionClass(ItemTranslator::class);
 		$simpleCoreToNetMap = $ref->getProperty("simpleCoreToNetMapping");
@@ -75,6 +91,10 @@ class CustomItemLoader extends PluginBase implements Listener{
 		$itemTypes->setValue(ItemTypeDictionary::getInstance(), $this->itemTypeEntries);
 
 		$this->packet = ItemComponentPacket::create($packetEntries);
+	}
+
+	public function getResourcePackFolder() : string{
+		return $this->getDataFolder() . "resource_packs/";
 	}
 
 	public function parseTag(string $name, array $data) : CompoundTag{
