@@ -7,3 +7,5 @@ A PocketMine-MP Plugin that implements custom item
 # How to use
 
 See my [wiki](https://github.com/alvin0319/CustomItemLoader/wiki)
+
+You can see my example on [example folder](./example/)

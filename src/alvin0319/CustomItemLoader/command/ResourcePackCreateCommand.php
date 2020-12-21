@@ -23,6 +23,7 @@ use function file_put_contents;
 use function implode;
 use function in_array;
 use function is_dir;
+use function json_decode;
 use function json_encode;
 use function mkdir;
 use function substr;
@@ -89,7 +90,7 @@ class ResourcePackCreateCommand extends PluginCommand{
 				mkdir($path . "textures/items/");
 				mkdir($path . "texts/");
 
-				file_put_contents($path . "textures/item_textures.json", json_encode([
+				file_put_contents($path . "textures/item_texture.json", json_encode([
 					"resource_pack_name" => "vanilla",
 					"texture_name" => "atlas.items",
 					"texture_data" => []
@@ -113,6 +114,11 @@ class ResourcePackCreateCommand extends PluginCommand{
 				$parsed = $this->parseLang($file);
 				$parsed["item." . $namespace] = $name;
 				file_put_contents($path, $this->combineLang($parsed));
+
+				$file = file_get_contents($path = CustomItemLoader::getInstance()->getResourcePackFolder() . $pack_name . "/textures/item_texture.json");
+				$parsed = json_decode($file, true);
+				$parsed["texture_data"][$name] = ["textures" => "textures/items/{$name}"];
+				file_put_contents($path, json_encode($parsed, JSON_PRETTY_PRINT | JSON_BIGINT_AS_STRING));
 				$sender->sendMessage("Item creation successful! make sure to add item to config.yml and item png file!");
 				break;
 			case "makepack":
