@@ -37,7 +37,7 @@ class ResourcePackCreateCommand extends PluginCommand{
 		parent::__construct("rsc", CustomItemLoader::getInstance());
 		$this->setDescription("Creates a resource pack");
 		$this->setPermission("customitemloader.command.rsc");
-		$this->setUsage("/rsc [create|additem]");
+		$this->setUsage("/rsc [create|additem|makepack]");
 	}
 
 	public function execute(CommandSender $sender, string $commandLabel, array $args) : bool{
@@ -116,8 +116,6 @@ class ResourcePackCreateCommand extends PluginCommand{
 				$sender->sendMessage("Item creation successful! make sure to add item to config.yml and item png file!");
 				break;
 			case "makepack":
-				// TODO
-				/*
 				array_shift($args);
 				$name = array_shift($args);
 				if(trim($name ?? "") === ""){
@@ -129,11 +127,12 @@ class ResourcePackCreateCommand extends PluginCommand{
 					return false;
 				}
 				$zip = new ZipArchive();
-				$zip->open(CustomItemLoader::getInstance()->getResourcePackFolder() . $name . ".mcpack", ZipArchive::CREATE | ZipArchive::OVERWRITE);
+				$zip->open($path = CustomItemLoader::getInstance()->getResourcePackFolder() . $name . ".mcpack", ZipArchive::CREATE | ZipArchive::OVERWRITE);
 				$this->recursiveZipDir($zip, $pathDir);
 				$zip->close();
 				$sender->sendMessage("Pack creation successful!");
-				*/ break;
+				$sender->sendMessage("Resource pack path: " . $path);
+				break;
 			default:
 				throw new InvalidCommandSyntaxException();
 		}
@@ -161,22 +160,28 @@ class ResourcePackCreateCommand extends PluginCommand{
 		return implode("\n", $res);
 	}
 
-	public function recursiveZipDir(ZipArchive $zip, string $dir) : void{
+	public function recursiveZipDir(ZipArchive $zip, string $dir, string $tempDir = "") : void{
 		$dir = Utils::cleanPath($dir);
+		$tempDir = Utils::cleanPath($tempDir);
 		if(substr($dir, -1) !== "/"){
 			$dir .= "/";
 		}
+
+		if(trim($tempDir) !== "" && substr($tempDir, -1) !== "/"){
+			$tempDir .= "/";
+		}
+
 		$files = new RecursiveIteratorIterator(new RecursiveDirectoryIterator($dir), RecursiveIteratorIterator::LEAVES_ONLY | RecursiveDirectoryIterator::SKIP_DOTS);
 		/** @var SplFileInfo $file */
 		foreach($files as $file){
 			if(!$file->isDir()){
 				if(!in_array($file->getFilename(), [".", ".."])){
-					$zip->addFile($dir . $file->getFilename(), $file->getFilename());
+					$zip->addFile($dir . $file->getFilename(), $tempDir . $file->getFilename());
 				}
 			}else{
 				if(!in_array($file->getFilename(), [".", ".."])){
 					$zip->addEmptyDir($file->getFilename());
-					$this->recursiveZipDir($zip, $dir . $file->getFilename());
+					$this->recursiveZipDir($zip, $dir . $file->getFilename(), $tempDir . $file->getFilename() . "/");
 				}
 			}
 		}
