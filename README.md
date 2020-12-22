@@ -1,4 +1,4 @@
-# CustomItem
+# CustomItemLoader
 A PocketMine-MP Plugin that implements custom item
 
 # Reference
