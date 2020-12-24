@@ -25,12 +25,13 @@ use pocketmine\network\mcpe\protocol\types\Experiments;
 use pocketmine\network\mcpe\protocol\types\ItemComponentPacketEntry;
 use pocketmine\network\mcpe\protocol\types\ItemTypeEntry;
 use pocketmine\plugin\PluginBase;
+use pocketmine\utils\AssumptionFailedError;
 use pocketmine\utils\SingletonTrait;
 use ReflectionClass;
+use Throwable;
 
-use function assert;
-use function is_array;
 use function is_dir;
+use function is_numeric;
 use function mkdir;
 
 class CustomItemLoader extends PluginBase implements Listener{
@@ -98,7 +99,8 @@ class CustomItemLoader extends PluginBase implements Listener{
 	}
 
 	public function parseTag(string $name, array $data) : CompoundTag{
-		assert(isset($data["components"]) === false || is_array($data["components"]) === false, "Array with key \"components\" not found");
+		$this->validateData($data);
+
 		$id = (int) $data["id"];
 		$meta = (int) $data["meta"];
 
@@ -151,10 +153,14 @@ class CustomItemLoader extends PluginBase implements Listener{
 
 		$this->itemTypeEntries[] = $entry = new ItemTypeEntry($namespace, $runtimeId, true);
 
-		if($durable){
-			ItemFactory::registerItem(new CustomDurableItem($id, $meta, $name, $data["max_stack_size"], $data["max_durability"]));
-		}else{
-			ItemFactory::registerItem(new CustomItem($id, $meta, $name, $data["max_stack_size"]));
+		try{
+			if($durable){
+				ItemFactory::registerItem(new CustomDurableItem($id, $meta, $name, $data["max_stack_size"], $data["max_durability"], $mining_speed));
+			}else{
+				ItemFactory::registerItem(new CustomItem($id, $meta, $name, $data["max_stack_size"], $mining_speed));
+			}
+		}catch(Throwable $e){
+			throw new AssumptionFailedError("Cannot register an existing item $id:$meta");
 		}
 		return $nbt;
 	}
@@ -168,6 +174,24 @@ class CustomItemLoader extends PluginBase implements Listener{
 		$packet = $event->getPacket();
 		if($packet instanceof StartGamePacket){
 			$packet->experiments = new Experiments([], true);
+		}
+	}
+
+	public function validateData(array $data) : void{
+		if(!isset($data["id"]) || !is_numeric($data["id"])){
+			throw new AssumptionFailedError("Array with key \"id\" not found");
+		}
+		if(!isset($data["meta"]) || !is_numeric($data["meta"])){
+			throw new AssumptionFailedError("Array with key \"meta\" not found");
+		}
+		if(!isset($data["namespace"])){
+			throw new AssumptionFailedError("Array with key \"namespace\" not found");
+		}
+		if(!isset($data["name"])){
+			throw new AssumptionFailedError("Array with key \"name\" not found");
+		}
+		if(!isset($data["texture"])){
+			throw new AssumptionFailedError("Array with key \"texture\" not found");
 		}
 	}
 }
