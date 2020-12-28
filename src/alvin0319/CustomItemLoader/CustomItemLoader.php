@@ -58,7 +58,7 @@ class CustomItemLoader extends PluginBase implements Listener{
 			mkdir($this->getResourcePackFolder());
 		}
 
-		$this->getServer()->getCommandMap()->register("customitem", new ResourcePackCreateCommand());
+		$this->getServer()->getCommandMap()->register("customitemloader", new ResourcePackCreateCommand());
 
 		$ref = new ReflectionClass(ItemTranslator::class);
 		$simpleCoreToNetMap = $ref->getProperty("simpleCoreToNetMapping");
