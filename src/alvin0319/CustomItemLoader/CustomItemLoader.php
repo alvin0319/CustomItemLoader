@@ -196,7 +196,7 @@ class CustomItemLoader extends PluginBase implements Listener{
 				ItemFactory::registerItem(new CustomItem($id, $meta, $name, $data["max_stack_size"], $mining_speed));
 			}
 		}catch(Throwable $e){
-			throw new AssumptionFailedError("Cannot register an existing item $id:$meta");
+			throw new AssumptionFailedError("Cannot register item $name($id:$meta): item is already registered or item id is out of range");
 		}
 		return $nbt;
 	}
