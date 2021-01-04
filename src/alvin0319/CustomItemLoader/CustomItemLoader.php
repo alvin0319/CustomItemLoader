@@ -20,6 +20,7 @@ namespace alvin0319\CustomItemLoader;
 
 use alvin0319\CustomItemLoader\command\ResourcePackCreateCommand;
 use alvin0319\CustomItemLoader\item\CustomDurableItem;
+use alvin0319\CustomItemLoader\item\CustomFoodItem;
 use alvin0319\CustomItemLoader\item\CustomItem;
 use pocketmine\event\Listener;
 use pocketmine\event\player\PlayerJoinEvent;
@@ -129,17 +130,26 @@ class CustomItemLoader extends PluginBase implements Listener{
 		$max_stack_size = (int) ($data["max_stack_size"] ?? 64);
 		$mining_speed = (float) ($data["mining_speed"] ?? 1);
 
+		$food = (int) ($data["food"] ?? false);
+		$can_always_eat = (int) ($data["can_always_eat"] ?? false);
+		$nutrition = (int) ($data["nutrition"] ?? 1);
+		$saturation = (float) ($data["saturation"] ?? 1);
+
 		$nbt = new CompoundTag("", [
 			new CompoundTag("components", [
-				new ByteTag("allow_off_hand", $allow_off_hand),
-				new ByteTag("can_destroy_in_creative", $can_destroy_in_creative),
-				new ByteTag("creative_category", $creative_category),
-				new ByteTag("hand_equipped", $hand_equipped),
-				new IntTag("max_stack_size", $max_stack_size),
-				new FloatTag("mining_speed", $mining_speed),
-				new ByteTag("animates_in_toolbar", 1),
 				new CompoundTag("minecraft:icon", [
 					new StringTag("texture", $data["texture"])
+				]),
+				new CompoundTag("item_properties", [
+					new IntTag("use_duration", 32),
+					new IntTag("use_animation", ($food === 1 ? 1 : 0)), // 2 is potion, but not now
+					new ByteTag("allow_off_hand", $allow_off_hand),
+					new ByteTag("can_destroy_in_creative", $can_destroy_in_creative),
+					new ByteTag("creative_category", $creative_category),
+					new ByteTag("hand_equipped", $hand_equipped),
+					new IntTag("max_stack_size", $max_stack_size),
+					new FloatTag("mining_speed", $mining_speed),
+					new ByteTag("animates_in_toolbar", 1),
 				])
 			]),
 			new ShortTag("minecraft:identifier", $runtimeId),
@@ -155,11 +165,21 @@ class CustomItemLoader extends PluginBase implements Listener{
 		]);
 		$durable = false;
 		if(isset($data["durable"]) && (bool) ($data["durable"]) !== false){
-			$nbt->setTag(new CompoundTag("minecraft:durability", [
+			$nbt->getCompoundTag("components")->setTag(new CompoundTag("minecraft:durability", [
 				new ShortTag("damage_change", 1),
 				new ShortTag("max_durable", $data["max_durability"])
 			]));
 			$durable = true;
+		}
+		if($food === 1){
+			$nbt->getCompoundTag("components")->setTag(new CompoundTag("minecraft:food", [
+				new ByteTag("can_always_eat", $can_always_eat),
+				new FloatTag("nutrition", $nutrition),
+				new StringTag("saturation_modifier", "low")
+			]));
+			$nbt->getCompoundTag("components")->setTag(new CompoundTag("minecraft:use_duration", [
+				new IntTag("value", 1)
+			]));
 		}
 		$runtimeId = $id + ($id > 0 ? 5000 : -5000);
 		$this->coreToNetValues[$id] = $runtimeId;
@@ -170,6 +190,8 @@ class CustomItemLoader extends PluginBase implements Listener{
 		try{
 			if($durable){
 				ItemFactory::registerItem(new CustomDurableItem($id, $meta, $name, $data["max_stack_size"], $data["max_durability"], $mining_speed));
+			}elseif($food){
+				ItemFactory::registerItem(new CustomFoodItem($id, $meta, $name, $data["max_stack_size"], $nutrition, $can_always_eat === 1, $saturation));
 			}else{
 				ItemFactory::registerItem(new CustomItem($id, $meta, $name, $data["max_stack_size"], $mining_speed));
 			}

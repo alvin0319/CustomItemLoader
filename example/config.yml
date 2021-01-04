@@ -6,7 +6,11 @@ items:
     name: facebook
     allow_off_hand: true
     max_stack_size: 64
-    texture: ccc
-    durable: true
+    texture: facebook
+    durable: false
     max_durability: 64
     mining_speed: 10
+    food: true
+    can_always_eat: true
+    nutrition: 10
+    saturation: 2
