@@ -1,6 +1,7 @@
 <a href="https://raw.githubusercontent.com/alvin0319/CustomItemLoader/master/assets/icon.png" align="center"></a>
 <br>
 <h1 align="center">CustomItemLoader :: Add awesome custom item</h1>
+<h1 align="center"><a href="https://poggit.pmmp.io/p/CustomItemLoader"><img src="https://poggit.pmmp.io/shield.state/CustomItemLoader"></a><a href="https://poggit.pmmp.io/p/CustomItemLoader"><img src="https://poggit.pmmp.io/shield.dl/CustomItemLoader"></a></h1>
 
 ## Reference
 All of these components were came from MCPE addon document and [wiki.vg](https://wiki.vg/Bedrock_Protocol)
