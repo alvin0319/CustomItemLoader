@@ -1,9 +1,9 @@
 items:
-  ccc:
+  facebook:
     id: 1001
     meta: 0
-    namespace: "custom:ccc"
-    name: ccc
+    namespace: "custom:facebook"
+    name: facebook
     allow_off_hand: true
     max_stack_size: 64
     texture: ccc
