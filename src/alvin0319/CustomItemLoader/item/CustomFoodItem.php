@@ -19,6 +19,8 @@ declare(strict_types=1);
 namespace alvin0319\CustomItemLoader\item;
 
 use pocketmine\item\Food;
+use pocketmine\item\Item;
+use pocketmine\item\ItemFactory;
 
 class CustomFoodItem extends Food{
 
@@ -28,14 +30,17 @@ class CustomFoodItem extends Food{
 
 	protected bool $canAlwaysEat = false;
 
-	protected int $saturation;
+	protected float $saturation;
 
-	public function __construct(int $id, int $meta = 0, string $name = "Unknown", int $maxStackSize = 64, int $nutrition = 1, bool $canAlwaysEat = false, float $saturation = 1){
+	protected Item $residue;
+
+	public function __construct(int $id, int $meta = 0, string $name = "Unknown", int $maxStackSize = 64, int $nutrition = 1, bool $canAlwaysEat = false, float $saturation = 1, ?Item $residue = null){
 		parent::__construct($id, $meta, $name);
 		$this->maxStackSize = $maxStackSize;
 		$this->nutrition = $nutrition;
 		$this->canAlwaysEat = $canAlwaysEat;
 		$this->saturation = $saturation;
+		$this->residue = $residue ?? ItemFactory::get(0);
 	}
 
 	public function getMaxStackSize() : int{
@@ -54,7 +59,7 @@ class CustomFoodItem extends Food{
 		return $this->saturation;
 	}
 
-	public function getResidue(){
-		return parent::getResidue(); // TODO: Find out the components
+	public function getResidue() : Item{
+		return $this->residue;
 	}
 }

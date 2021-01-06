@@ -134,6 +134,7 @@ class CustomItemLoader extends PluginBase implements Listener{
 		$can_always_eat = (int) ($data["can_always_eat"] ?? false);
 		$nutrition = (int) ($data["nutrition"] ?? 1);
 		$saturation = (float) ($data["saturation"] ?? 1);
+		$residue = isset($data["residue"]) ? ItemFactory::get((int) $data["residue"]["id"], (int) ($data["residue"]["meta"] ?? 0)) : ItemFactory::get(0);
 
 		$nbt = new CompoundTag("", [
 			new CompoundTag("components", [
@@ -191,7 +192,7 @@ class CustomItemLoader extends PluginBase implements Listener{
 			if($durable){
 				ItemFactory::registerItem(new CustomDurableItem($id, $meta, $name, $data["max_stack_size"], $data["max_durability"], $mining_speed));
 			}elseif($food){
-				ItemFactory::registerItem(new CustomFoodItem($id, $meta, $name, $data["max_stack_size"], $nutrition, $can_always_eat === 1, $saturation));
+				ItemFactory::registerItem(new CustomFoodItem($id, $meta, $name, $data["max_stack_size"], $nutrition, $can_always_eat === 1, $saturation, $residue));
 			}else{
 				ItemFactory::registerItem(new CustomItem($id, $meta, $name, $data["max_stack_size"], $mining_speed));
 			}
