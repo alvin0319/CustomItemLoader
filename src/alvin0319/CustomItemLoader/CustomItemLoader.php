@@ -53,13 +53,13 @@ class CustomItemLoader extends PluginBase implements Listener{
 	use SingletonTrait;
 
 	/** @var ItemComponentPacket */
-	protected $packet;
+	protected ItemComponentPacket $packet;
 
-	protected $netToCoreValues = [];
+	protected array $netToCoreValues = [];
 
-	protected $coreToNetValues = [];
+	protected array $coreToNetValues = [];
 
-	protected $itemTypeEntries = [];
+	protected array $itemTypeEntries = [];
 
 	public function onLoad() : void{
 		self::setInstance($this);

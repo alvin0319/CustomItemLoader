@@ -24,9 +24,9 @@ use pocketmine\item\Item;
 
 class CustomItem extends Item{
 	/** @var int */
-	protected $maxStackSize = 64;
+	protected int $maxStackSize = 64;
 	/** @var float */
-	protected $miningSpeed = 1;
+	protected float $miningSpeed = 1.0;
 
 	public function __construct(int $id, int $meta = 0, string $name = "Unknown", int $maxStackSize = 64, float $miningSpeed = 1){
 		parent::__construct($id, $meta, $name);

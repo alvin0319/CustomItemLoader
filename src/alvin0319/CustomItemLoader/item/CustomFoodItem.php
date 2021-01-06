@@ -22,13 +22,13 @@ use pocketmine\item\Food;
 
 class CustomFoodItem extends Food{
 
-	protected $maxStackSize = 64;
+	protected int $maxStackSize = 64;
 
-	protected $nutrition;
+	protected int $nutrition;
 
-	protected $canAlwaysEat = false;
+	protected bool $canAlwaysEat = false;
 
-	protected $saturation;
+	protected int $saturation;
 
 	public function __construct(int $id, int $meta = 0, string $name = "Unknown", int $maxStackSize = 64, int $nutrition = 1, bool $canAlwaysEat = false, float $saturation = 1){
 		parent::__construct($id, $meta, $name);

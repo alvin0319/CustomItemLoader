@@ -25,11 +25,11 @@ use pocketmine\item\Durable;
 
 class CustomDurableItem extends Durable{
 	/** @var int */
-	protected $maxDurable = -1;
+	protected int $maxDurable = -1;
 	/** @var int */
-	protected $maxStackSize = 64;
+	protected int $maxStackSize = 64;
 	/** @var float */
-	protected $miningSpeed = 1;
+	protected float $miningSpeed = 1.0;
 
 	public function __construct(int $id, int $meta, string $name, int $maxStackSize = 64, int $maxDurable = 64, float $miningSpeed = 1){
 		parent::__construct($id, $meta, $name);
