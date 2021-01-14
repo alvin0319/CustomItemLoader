@@ -7,5 +7,6 @@ jobs:
     steps:
       - uses: nxtlvlsoftware/pmmp-phpstan:master
       - name: PHPStan
+        uses: nxtlvlsoftware/pmmp-phpstan:master
         with:
           args: analyse src/
