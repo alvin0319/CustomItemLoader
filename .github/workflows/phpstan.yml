@@ -10,6 +10,6 @@ jobs:
         with:
           ref: ${{ github.ref }}
       - name: Run PHPStan
-        uses: nxtlvlsoftware/pmmp-phpstan@7cc4485bb5aa6d18a5c2d872cadf6aae46c3981a
+        uses: nxtlvlsoftware/pmmp-phpstan-action@7cc4485bb5aa6d18a5c2d872cadf6aae46c3981a
         with:
           phpstan-config: phpstan.neon.dist
