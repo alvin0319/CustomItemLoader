@@ -1,12 +1,15 @@
+name: PHPStan
+
 on: [push, pull_request]
-name: Test
+
 jobs:
   phpstan:
-    name: PHPStan
     runs-on: ubuntu-latest
     steps:
-      - uses: nxtlvlsoftware/pmmp-phpstan:master
-      - name: PHPStan
-        uses: nxtlvlsoftware/pmmp-phpstan:master
+      - uses: actions/checkout@v2
         with:
-          args: analyse src/
+          ref: ${{ github.ref }}
+      - name: Run PHPStan
+        uses: nxtlvlsoftware/pmmp-phpstan@stable
+        with:
+          phpstan-config: phpstan.neon.dist
