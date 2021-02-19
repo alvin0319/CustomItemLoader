@@ -19,8 +19,8 @@ declare(strict_types=1);
 namespace alvin0319\CustomItemLoader\item;
 
 use InvalidArgumentException;
-use pocketmine\block\Block;
 use pocketmine\item\Item;
+use pocketmine\item\ItemIdentifier;
 
 class CustomItem extends Item{
 	/** @var int */
@@ -29,7 +29,7 @@ class CustomItem extends Item{
 	protected float $miningSpeed = 1.0;
 
 	public function __construct(int $id, int $meta = 0, string $name = "Unknown", int $maxStackSize = 64, float $miningSpeed = 1){
-		parent::__construct($id, $meta, $name);
+		parent::__construct(new ItemIdentifier($id, $meta), $name);
 		$this->maxStackSize = $maxStackSize;
 		if($miningSpeed <= 0){
 			throw new InvalidArgumentException("Mining speed must larger than 0");
@@ -41,7 +41,10 @@ class CustomItem extends Item{
 		return $this->maxStackSize;
 	}
 
-	public function getMiningEfficiency(Block $block) : float{
-		return $this->miningSpeed;
+	public function getMiningEfficiency(bool $isCorrectTool) : float{
+		if($isCorrectTool){
+			return $this->miningSpeed;
+		}
+		return parent::getMiningEfficiency($isCorrectTool);
 	}
 }

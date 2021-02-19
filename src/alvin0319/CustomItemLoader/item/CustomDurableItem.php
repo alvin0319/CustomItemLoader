@@ -22,6 +22,7 @@ use InvalidArgumentException;
 use pocketmine\block\Block;
 use pocketmine\entity\Entity;
 use pocketmine\item\Durable;
+use pocketmine\item\ItemIdentifier;
 
 class CustomDurableItem extends Durable{
 	/** @var int */
@@ -32,7 +33,7 @@ class CustomDurableItem extends Durable{
 	protected float $miningSpeed = 1.0;
 
 	public function __construct(int $id, int $meta, string $name, int $maxStackSize = 64, int $maxDurable = 64, float $miningSpeed = 1){
-		parent::__construct($id, $meta, $name);
+		parent::__construct(new ItemIdentifier($id, $meta), $name);
 		$this->maxDurable = $maxDurable;
 		$this->maxStackSize = $maxStackSize;
 		if($miningSpeed <= 0){
@@ -57,7 +58,10 @@ class CustomDurableItem extends Durable{
 		return $this->applyDamage(1);
 	}
 
-	public function getMiningEfficiency(Block $block) : float{
-		return $this->miningSpeed;
+	public function getMiningEfficiency(bool $isCorrectTool) : float{
+		if($isCorrectTool){
+			return $this->miningSpeed;
+		}
+		return parent::getMiningEfficiency($isCorrectTool);
 	}
 }

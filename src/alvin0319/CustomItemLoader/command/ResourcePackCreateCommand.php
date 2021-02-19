@@ -19,17 +19,16 @@ declare(strict_types=1);
 namespace alvin0319\CustomItemLoader\command;
 
 use alvin0319\CustomItemLoader\CustomItemLoader;
+use pocketmine\command\Command;
 use pocketmine\command\CommandSender;
-use pocketmine\command\PluginCommand;
 use pocketmine\command\utils\InvalidCommandSyntaxException;
 use pocketmine\network\mcpe\protocol\ProtocolInfo;
-use pocketmine\utils\Utils;
-use pocketmine\utils\UUID;
+use pocketmine\utils\Filesystem;
+use pocketmine\uuid\UUID;
 use RecursiveDirectoryIterator;
 use RecursiveIteratorIterator;
 use SplFileInfo;
 use ZipArchive;
-
 use function array_shift;
 use function explode;
 use function file_get_contents;
@@ -42,14 +41,13 @@ use function json_encode;
 use function mkdir;
 use function substr;
 use function trim;
-
 use const JSON_BIGINT_AS_STRING;
 use const JSON_PRETTY_PRINT;
 
-class ResourcePackCreateCommand extends PluginCommand{
+class ResourcePackCreateCommand extends Command{
 
 	public function __construct(){
-		parent::__construct("rsc", CustomItemLoader::getInstance());
+		parent::__construct("rsc");
 		$this->setDescription("Creates a resource pack");
 		$this->setPermission("customitemloader.command.rsc");
 		$this->setUsage("/rsc [create|additem|makepack]");
@@ -181,8 +179,8 @@ class ResourcePackCreateCommand extends PluginCommand{
 	}
 
 	public function recursiveZipDir(ZipArchive $zip, string $dir, string $tempDir = "") : void{
-		$dir = Utils::cleanPath($dir);
-		$tempDir = Utils::cleanPath($tempDir);
+		$dir = Filesystem::cleanPath($dir);
+		$tempDir = Filesystem::cleanPath($tempDir);
 		if(substr($dir, -1) !== "/"){
 			$dir .= "/";
 		}

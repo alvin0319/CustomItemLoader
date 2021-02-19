@@ -26,12 +26,7 @@ use pocketmine\event\Listener;
 use pocketmine\event\player\PlayerJoinEvent;
 use pocketmine\event\server\DataPacketSendEvent;
 use pocketmine\item\ItemFactory;
-use pocketmine\nbt\tag\ByteTag;
 use pocketmine\nbt\tag\CompoundTag;
-use pocketmine\nbt\tag\FloatTag;
-use pocketmine\nbt\tag\IntTag;
-use pocketmine\nbt\tag\ShortTag;
-use pocketmine\nbt\tag\StringTag;
 use pocketmine\network\mcpe\convert\ItemTranslator;
 use pocketmine\network\mcpe\convert\ItemTypeDictionary;
 use pocketmine\network\mcpe\protocol\ItemComponentPacket;
@@ -44,7 +39,6 @@ use pocketmine\utils\AssumptionFailedError;
 use pocketmine\utils\SingletonTrait;
 use ReflectionClass;
 use Throwable;
-
 use function is_dir;
 use function is_numeric;
 use function mkdir;
@@ -134,54 +128,53 @@ class CustomItemLoader extends PluginBase implements Listener{
 		$can_always_eat = (int) ($data["can_always_eat"] ?? false);
 		$nutrition = (int) ($data["nutrition"] ?? 1);
 		$saturation = (float) ($data["saturation"] ?? 1);
-		$residue = isset($data["residue"]) ? ItemFactory::get((int) $data["residue"]["id"], (int) ($data["residue"]["meta"] ?? 0)) : ItemFactory::get(0);
+		$residue = isset($data["residue"]) ? ItemFactory::getInstance()->get((int) $data["residue"]["id"], (int) ($data["residue"]["meta"] ?? 0)) : ItemFactory::get(0);
 
-		$nbt = new CompoundTag("", [
-			new CompoundTag("components", [
-				new CompoundTag("minecraft:icon", [
-					new StringTag("texture", $data["texture"])
-				]),
-				new CompoundTag("item_properties", [
-					new IntTag("use_duration", 32),
-					new IntTag("use_animation", ($food === 1 ? 1 : 0)), // 2 is potion, but not now
-					new ByteTag("allow_off_hand", $allow_off_hand),
-					new ByteTag("can_destroy_in_creative", $can_destroy_in_creative),
-					new ByteTag("creative_category", $creative_category),
-					new ByteTag("hand_equipped", $hand_equipped),
-					new IntTag("max_stack_size", $max_stack_size),
-					new FloatTag("mining_speed", $mining_speed),
-					new ByteTag("animates_in_toolbar", 1),
-				])
-			]),
-			new ShortTag("minecraft:identifier", $runtimeId),
-			new CompoundTag("minecraft:display_name", [
-				new StringTag("value", $data["name"])
-			]),
-			new CompoundTag("minecraft:on_use", [
-				new ByteTag("on_use", 1)
-			]),
-			new CompoundTag("minecraft:on_use_on", [
-				new ByteTag("on_use_on", 1)
-			])
-		]);
+		$nbt = CompoundTag::create()
+			->setTag("components", CompoundTag::create()
+				->setString("texture", $data["texture"])
+			)->setTag("item_properties", CompoundTag::create()
+				->setInt("use_duration", 32)
+				->setInt("use_animation", ($food === 1 ? 1 : 0))
+				->setByte("allow_off_hand", $allow_off_hand)
+				->setByte("can_destroy_in_creative", $can_destroy_in_creative)
+				->setByte("creative_category", $creative_category)
+				->setByte("hand_equipped", $hand_equipped)
+				->setInt("max_stack_size", $max_stack_size)
+				->setFloat("mining_speed", $mining_speed)
+				->setByte("animates_in_toolbar", 1)
+			)
+			->setShort("minecraft:identifier", $runtimeId)
+			->setTag("minecraft:display_name", CompoundTag::create()
+				->setString("value", $data["name"])
+			)
+			->setTag("minecraft:on_use", CompoundTag::create()
+				->setByte("on_use", 1)
+			)
+			->setTag("minecraft:on_use_on", CompoundTag::create()
+				->setByte("on_use_on", 1)
+			);
 		$durable = false;
 		if(isset($data["durable"]) && (bool) ($data["durable"]) !== false){
-			$nbt->getCompoundTag("components")->setTag(new CompoundTag("minecraft:durability", [
-				new ShortTag("damage_change", 1),
-				new ShortTag("max_durable", $data["max_durability"])
-			]));
-			$durable = true;
+			$nbt->getCompoundTag("components")
+				->setTag("minecraft:durability", CompoundTag::create()
+					->setShort("damage_change", 1)
+					->setString("max_durable", $data["max_durability"])
+				);
 		}
 		if($food === 1){
-			$nbt->getCompoundTag("components")->setTag(new CompoundTag("minecraft:food", [
-				new ByteTag("can_always_eat", $can_always_eat),
-				new FloatTag("nutrition", $nutrition),
-				new StringTag("saturation_modifier", "low")
-			]));
-			$nbt->getCompoundTag("components")->setTag(new CompoundTag("minecraft:use_duration", [
-				new IntTag("value", 1)
-			]));
+			$nbt->getCompoundTag("components")
+				->setTag("minecraft:food", CompoundTag::create()
+					->setByte("can_always_eat", $can_always_eat)
+					->setFloat("nutrition", $nutrition)
+					->setString("saturation_modifier", "low")
+				);
+			$nbt->getCompoundTag("components")
+				->setTag("minecraft:use_duration", CompoundTag::create()
+					->setInt("value", 1)
+				);
 		}
+
 		$runtimeId = $id + ($id > 0 ? 5000 : -5000);
 		$this->coreToNetValues[$id] = $runtimeId;
 		$this->netToCoreValues[$runtimeId] = $id;
@@ -190,11 +183,11 @@ class CustomItemLoader extends PluginBase implements Listener{
 
 		try{
 			if($durable){
-				ItemFactory::registerItem(new CustomDurableItem($id, $meta, $name, $data["max_stack_size"], $data["max_durability"], $mining_speed));
+				ItemFactory::getInstance()->register(new CustomDurableItem($id, $meta, $name, $data["max_stack_size"], $data["max_durability"], $mining_speed));
 			}elseif($food){
-				ItemFactory::registerItem(new CustomFoodItem($id, $meta, $name, $data["max_stack_size"], $nutrition, $can_always_eat === 1, $saturation, $residue));
+				ItemFactory::getInstance()->register(new CustomFoodItem($id, $meta, $name, $data["max_stack_size"], $nutrition, $can_always_eat === 1, $saturation, $residue));
 			}else{
-				ItemFactory::registerItem(new CustomItem($id, $meta, $name, $data["max_stack_size"], $mining_speed));
+				ItemFactory::getInstance()->register(new CustomItem($id, $meta, $name, $data["max_stack_size"], $mining_speed));
 			}
 		}catch(Throwable $e){
 			throw new AssumptionFailedError("Cannot register item $name($id:$meta): item is already registered or item id is out of range");
@@ -204,13 +197,16 @@ class CustomItemLoader extends PluginBase implements Listener{
 
 	public function onPlayerJoin(PlayerJoinEvent $event) : void{
 		$player = $event->getPlayer();
-		$player->sendDataPacket(clone $this->packet);
+		$player->getNetworkSession()->sendDataPacket(clone $this->packet);
 	}
 
 	public function onDataPacketSend(DataPacketSendEvent $event) : void{
-		$packet = $event->getPacket();
-		if($packet instanceof StartGamePacket){
-			$packet->experiments = new Experiments([], true);
+		$packets = $event->getPackets();
+		foreach($packets as $packet){
+			if($packet instanceof StartGamePacket){
+				$packet->experiments = new Experiments([], true);
+				break;
+			}
 		}
 	}
 
