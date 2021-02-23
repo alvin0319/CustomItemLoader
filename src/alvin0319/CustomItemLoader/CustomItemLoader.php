@@ -19,6 +19,7 @@ declare(strict_types=1);
 namespace alvin0319\CustomItemLoader;
 
 use alvin0319\CustomItemLoader\command\ResourcePackCreateCommand;
+use alvin0319\CustomItemLoader\item\CustomArmorItem;
 use alvin0319\CustomItemLoader\item\CustomDurableItem;
 use alvin0319\CustomItemLoader\item\CustomFoodItem;
 use alvin0319\CustomItemLoader\item\CustomItem;
@@ -136,6 +137,8 @@ class CustomItemLoader extends PluginBase implements Listener{
 		$saturation = (float) ($data["saturation"] ?? 1);
 		$residue = isset($data["residue"]) ? ItemFactory::get((int) $data["residue"]["id"], (int) ($data["residue"]["meta"] ?? 0)) : ItemFactory::get(0);
 
+		$armor = (bool) ($data["armor"] ?? false);
+
 		$nbt = new CompoundTag("", [
 			new CompoundTag("components", [
 				new CompoundTag("minecraft:icon", [
@@ -193,6 +196,8 @@ class CustomItemLoader extends PluginBase implements Listener{
 				ItemFactory::registerItem(new CustomDurableItem($id, $meta, $name, $data["max_stack_size"], $data["max_durability"], $mining_speed));
 			}elseif($food){
 				ItemFactory::registerItem(new CustomFoodItem($id, $meta, $name, $data["max_stack_size"], $nutrition, $can_always_eat === 1, $saturation, $residue));
+			}elseif($armor){
+				ItemFactory::registerItem(new CustomArmorItem($id, $meta, $name, $data["max_stack_size"], $data["max_durability"], ($data["defence_point"] ?? 1)));
 			}else{
 				ItemFactory::registerItem(new CustomItem($id, $meta, $name, $data["max_stack_size"], $mining_speed));
 			}
