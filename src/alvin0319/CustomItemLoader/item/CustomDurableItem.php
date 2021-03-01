@@ -18,35 +18,19 @@ declare(strict_types=1);
 
 namespace alvin0319\CustomItemLoader\item;
 
-use InvalidArgumentException;
 use pocketmine\block\Block;
 use pocketmine\entity\Entity;
 use pocketmine\item\Durable;
 
 class CustomDurableItem extends Durable{
-	/** @var int */
-	protected int $maxDurable = -1;
-	/** @var int */
-	protected int $maxStackSize = 64;
-	/** @var float */
-	protected float $miningSpeed = 1.0;
+	use CustomItemTrait;
 
-	public function __construct(int $id, int $meta, string $name, int $maxStackSize = 64, int $maxDurable = 64, float $miningSpeed = 1){
-		parent::__construct($id, $meta, $name);
-		$this->maxDurable = $maxDurable;
-		$this->maxStackSize = $maxStackSize;
-		if($miningSpeed <= 0){
-			throw new InvalidArgumentException("Mining speed must larger than 0");
-		}
-		$this->miningSpeed = $miningSpeed;
+	public function getMaxStackSize() : int{
+		return $this->getProperties()->getMaxStackSize();
 	}
 
 	public function getMaxDurability() : int{
-		return $this->maxDurable;
-	}
-
-	public function getMaxStackSize() : int{
-		return $this->maxStackSize;
+		return $this->getProperties()->getMaxDurability();
 	}
 
 	public function onDestroyBlock(Block $block) : bool{
@@ -58,6 +42,6 @@ class CustomDurableItem extends Durable{
 	}
 
 	public function getMiningEfficiency(Block $block) : float{
-		return $this->miningSpeed;
+		return $this->getProperties()->getMiningSpeed();
 	}
 }

@@ -3,11 +3,17 @@ name: PHPStan
 on: [push, pull_request]
 
 jobs:
+  setting-environment:
   phpstan:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v2
         with:
           ref: ${{ github.ref }}
+      - name: Install PMMP
+        run: |
+          echo "Downloading PocketMine-MP.phar"
+          curl -sL https://jenkins.pmmp.io/job/PocketMine-MP/lastSuccessfulBuild/artifacts/PocketMine-MP.phar >> PocketMine-MP.phar
+
       - name: Run PHPStan
         uses: nxtlvlsoftware/pmmp-phpstan-action@stable

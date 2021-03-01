@@ -29,7 +29,6 @@ use RecursiveDirectoryIterator;
 use RecursiveIteratorIterator;
 use SplFileInfo;
 use ZipArchive;
-
 use function array_shift;
 use function explode;
 use function file_get_contents;
@@ -42,7 +41,6 @@ use function json_encode;
 use function mkdir;
 use function substr;
 use function trim;
-
 use const JSON_BIGINT_AS_STRING;
 use const JSON_PRETTY_PRINT;
 
