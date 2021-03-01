@@ -13,7 +13,7 @@ trait CustomItemTrait{
 	public function __construct(string $name, array $data){
 		$this->properties = new CustomItemProperties($name, $data);
 		$this->id = $this->properties->getId();
-		$this->damage = $this->properties->getMeta();
+		$this->meta = $this->properties->getMeta();
 		$this->name = $this->properties->getName();
 	}
 
