@@ -21,26 +21,13 @@ namespace alvin0319\CustomItemLoader\item;
 use pocketmine\item\Armor;
 
 class CustomArmorItem extends Armor{
-
-	/** @var int */
-	protected int $maxDurable = -1;
-	/** @var int */
-	protected int $maxStackSize = 64;
-	/** @var int */
-	protected int $defencePoint = 1;
-
-	public function __construct(int $id, int $meta, string $name, int $maxStackSize = 64, int $maxDurable = 64, int $defencePoint = 1){
-		parent::__construct($id, $meta, $name);
-		$this->maxStackSize = $maxStackSize;
-		$this->maxDurable = $maxDurable;
-		$this->defencePoint = $defencePoint;
-	}
+	use CustomItemTrait;
 
 	public function getMaxDurability() : int{
-		return $this->maxDurable;
+		return $this->getProperties()->getMaxDurability();
 	}
 
 	public function getDefensePoints() : int{
-		return $this->defencePoint;
+		return $this->getProperties()->getDefencePoints();
 	}
 }
