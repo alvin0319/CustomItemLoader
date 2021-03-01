@@ -79,7 +79,7 @@ final class CustomItemManager{
 
 			ItemFactory::registerItem($item, true);
 		}catch(\Throwable $e){
-			throw new AssumptionFailedError("Failed to register item: " . $e->getMessage(), 0, $e);
+			throw new AssumptionFailedError("Failed to register item: " . $e->getMessage(), $e->getLine(), $e);
 		}
 		self::refresh();
 	}
