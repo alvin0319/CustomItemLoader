@@ -20,46 +20,28 @@ namespace alvin0319\CustomItemLoader\item;
 
 use pocketmine\item\Food;
 use pocketmine\item\Item;
-use pocketmine\item\ItemFactory;
 
 class CustomFoodItem extends Food{
+	use CustomItemTrait;
 
-	protected int $maxStackSize = 64;
-
-	protected int $nutrition;
-
-	protected bool $canAlwaysEat = false;
-
-	protected float $saturation;
-
-	protected Item $residue;
-
-	public function __construct(int $id, int $meta = 0, string $name = "Unknown", int $maxStackSize = 64, int $nutrition = 1, bool $canAlwaysEat = false, float $saturation = 1, ?Item $residue = null){
-		parent::__construct($id, $meta, $name);
-		$this->maxStackSize = $maxStackSize;
-		$this->nutrition = $nutrition;
-		$this->canAlwaysEat = $canAlwaysEat;
-		$this->saturation = $saturation;
-		$this->residue = $residue ?? ItemFactory::get(0);
-	}
 
 	public function getMaxStackSize() : int{
-		return $this->maxStackSize;
+		return $this->getProperties()->getMaxStackSize();
 	}
 
 	public function getFoodRestore() : int{
-		return $this->nutrition;
+		return $this->getProperties()->getNutrition();
 	}
 
 	public function requiresHunger() : bool{
-		return $this->canAlwaysEat;
+		return $this->getProperties()->getCanAlwaysEat();
 	}
 
 	public function getSaturationRestore() : float{
-		return $this->saturation;
+		return $this->getProperties()->getSaturation();
 	}
 
 	public function getResidue() : Item{
-		return $this->residue;
+		return $this->getProperties()->getResidue();
 	}
 }
