@@ -24,7 +24,6 @@ use pocketmine\item\Item;
 class CustomFoodItem extends Food{
 	use CustomItemTrait;
 
-
 	public function getMaxStackSize() : int{
 		return $this->getProperties()->getMaxStackSize();
 	}
