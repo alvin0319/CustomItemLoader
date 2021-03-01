@@ -35,10 +35,6 @@ final class CustomItemManager{
 
 	protected static array $itemTypeEntries = [];
 
-	/**
-	 * Function getItems
-	 * @return Item[]
-	 */
 	public static function getItems() : array{
 		return self::$registered;
 	}
@@ -83,8 +79,7 @@ final class CustomItemManager{
 
 			ItemFactory::registerItem($item, true);
 		}catch(\Throwable $e){
-			//throw new AssumptionFailedError("Failed to register item: " . $e->getMessage(), 0, $e);
-			throw $e;
+			throw new AssumptionFailedError("Failed to register item: " . $e->getMessage(), 0, $e);
 		}
 		self::refresh();
 	}
