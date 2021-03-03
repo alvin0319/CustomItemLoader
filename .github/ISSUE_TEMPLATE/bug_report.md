@@ -26,7 +26,7 @@ A clear and concise description of what you experienced.
 **Screenshots**
 If applicable, add screenshots to help explain your problem.
 
-**Desktop (please complete the following information):**
+**Version info (please complete the following information):**
 <!-- latest is not correct version name. use commit hash. -->
  - OS: [e.g. iOS]
  - PocketMine-MP Version:
