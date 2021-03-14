@@ -22,7 +22,6 @@ use alvin0319\CustomItemLoader\command\ResourcePackCreateCommand;
 use pocketmine\event\Listener;
 use pocketmine\event\player\PlayerJoinEvent;
 use pocketmine\event\server\DataPacketSendEvent;
-use pocketmine\network\mcpe\protocol\ItemComponentPacket;
 use pocketmine\network\mcpe\protocol\StartGamePacket;
 use pocketmine\network\mcpe\protocol\types\Experiments;
 use pocketmine\plugin\PluginBase;
@@ -32,15 +31,6 @@ use function mkdir;
 
 class CustomItemLoader extends PluginBase implements Listener{
 	use SingletonTrait;
-
-	/** @var ItemComponentPacket */
-	protected ItemComponentPacket $packet;
-
-	protected array $netToCoreValues = [];
-
-	protected array $coreToNetValues = [];
-
-	protected array $itemTypeEntries = [];
 
 	public function onLoad() : void{
 		self::setInstance($this);

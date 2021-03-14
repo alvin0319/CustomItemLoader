@@ -41,8 +41,6 @@ use function json_encode;
 use function mkdir;
 use function substr;
 use function trim;
-use const JSON_BIGINT_AS_STRING;
-use const JSON_PRETTY_PRINT;
 
 class ResourcePackCreateCommand extends PluginCommand{
 

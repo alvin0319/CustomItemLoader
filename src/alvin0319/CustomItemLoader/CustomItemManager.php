@@ -33,22 +33,27 @@ use pocketmine\network\mcpe\protocol\types\ItemComponentPacketEntry;
 use pocketmine\network\mcpe\protocol\types\ItemTypeEntry;
 use pocketmine\utils\AssumptionFailedError;
 use ReflectionClass;
+use ReflectionProperty;
 
 final class CustomItemManager{
-	protected static array $registered = [];
-	protected static ItemComponentPacket $packet;
-
-	protected static \ReflectionProperty $coreToNetMap;
-	protected static \ReflectionProperty $netToCoreMap;
-
-	protected static array $coreToNetValues = [];
-	protected static array $netToCoreValues = [];
-
-	protected static \ReflectionProperty $itemTypeMap;
-
-	protected static array $packetEntries = [];
-
-	protected static array $itemTypeEntries = [];
+	/** @var Item[] */
+	protected static $registered = [];
+	/** @var ItemComponentPacket */
+	protected static $packet;
+	/** @var ReflectionProperty */
+	protected static $coreToNetMap;
+	/** @var ReflectionProperty */
+	protected static $netToCoreMap;
+	/** @var array */
+	protected static $coreToNetValues = [];
+	/** @var array */
+	protected static $netToCoreValues = [];
+	/** @var ReflectionProperty */
+	protected static $itemTypeMap;
+	/** @var ItemComponentPacketEntry[] */
+	protected static $packetEntries = [];
+	/** @var ItemTypeEntry[] */
+	protected static $itemTypeEntries = [];
 
 	public static function getItems() : array{
 		return self::$registered;

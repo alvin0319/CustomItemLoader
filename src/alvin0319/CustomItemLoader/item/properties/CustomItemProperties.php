@@ -26,49 +26,51 @@ use pocketmine\nbt\tag\FloatTag;
 use pocketmine\nbt\tag\IntTag;
 use pocketmine\nbt\tag\ShortTag;
 use pocketmine\nbt\tag\StringTag;
+use ReflectionClass;
 
 final class CustomItemProperties{
-	protected string $name;
-
-	protected int $id;
-
-	protected int $meta;
-
-	protected string $namespace;
-
-	protected int $runtimeId;
-
-	protected bool $durable = false;
-
-	protected ?int $max_durability = null;
-
-	protected bool $allow_off_hand = false;
-
-	protected bool $can_destroy_in_creative = false;
-
-	protected int $creative_category = 1;
-
-	protected bool $hand_equipped = true;
-
-	protected int $max_stack_size = 64;
-
-	protected float $mining_speed = 1;
-
-	protected bool $food = false;
-
-	protected bool $can_always_eat = false;
-
-	protected ?int $nutrition = null;
-
-	protected ?float $saturation = null;
-
-	protected ?Item $residue = null;
-
-	protected bool $armor = false;
-
-	protected ?int $defence_points;
-
-	protected CompoundTag $nbt;
+	/** @var string */
+	protected $name;
+	/** @var int */
+	protected $id;
+	/** @var int */
+	protected $meta;
+	/** @var string */
+	protected $namespace;
+	/** @var int */
+	protected $runtimeId;
+	/** @var bool */
+	protected $durable = false;
+	/** @var int|null */
+	protected $max_durability = null;
+	/** @var bool */
+	protected $allow_off_hand = false;
+	/** @var bool */
+	protected $can_destroy_in_creative = false;
+	/** @var int */
+	protected $creative_category = 1;
+	/** @var bool */
+	protected $hand_equipped = true;
+	/** @var int */
+	protected $max_stack_size = 64;
+	/** @var int */
+	protected $mining_speed = 1;
+	/** @var bool */
+	protected $food = false;
+	/** @var bool */
+	protected $can_always_eat = false;
+	/** @var int|null */
+	protected $nutrition = null;
+	/** @var float|null */
+	protected $saturation = null;
+	/** @var Item|null */
+	protected $residue = null;
+	/** @var bool */
+	protected $armor = false;
+	/** @var int */
+	protected $defence_points;
+	/** @var CompoundTag */
+	protected $nbt;
 
 	public function __construct(string $name, array $data){
 		$this->name = $name;
@@ -251,5 +253,12 @@ final class CustomItemProperties{
 
 	public function getNbt() : CompoundTag{
 		return $this->nbt;
+	}
+
+	public static function withoutData() : CustomItemProperties{
+		$class = new ReflectionClass(self::class);
+		/** @var CustomItemProperties $newInstance */
+		$newInstance = $class->newInstanceWithoutConstructor();
+		return $newInstance;
 	}
 }

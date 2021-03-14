@@ -21,8 +21,8 @@ namespace alvin0319\CustomItemLoader\item;
 use alvin0319\CustomItemLoader\item\properties\CustomItemProperties;
 
 trait CustomItemTrait{
-
-	protected CustomItemProperties $properties;
+	/** @var CustomItemProperties */
+	protected $properties;
 
 	public function __construct(string $name, array $data){
 		$this->properties = new CustomItemProperties($name, $data);
