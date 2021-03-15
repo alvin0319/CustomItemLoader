@@ -63,6 +63,7 @@ class CustomItemLoader extends PluginBase implements Listener{
 		$packet = $event->getPacket();
 		if($packet instanceof StartGamePacket){
 			$packet->experiments = new Experiments([], true);
+			$packet->experimentalGameplayOverride = true;
 		}
 	}
 }
