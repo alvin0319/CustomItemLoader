@@ -26,7 +26,9 @@ use pocketmine\nbt\tag\FloatTag;
 use pocketmine\nbt\tag\IntTag;
 use pocketmine\nbt\tag\ShortTag;
 use pocketmine\nbt\tag\StringTag;
+use pocketmine\utils\AssumptionFailedError;
 use ReflectionClass;
+use function in_array;
 
 final class CustomItemProperties{
 	/** @var string */
@@ -152,6 +154,19 @@ final class CustomItemProperties{
 			$this->saturation = $saturation;
 			$this->residue = $residue;
 		}
+
+		if($armor){
+			if(!isset($data["armor_position"])){
+				throw new AssumptionFailedError("Armor should have its position (head, chest, legs, feet)");
+			}
+			if(!in_array($data["armor_position"], ["head", "chest", "legs", "feet"])){
+				throw new AssumptionFailedError("Position is invalid");
+			}
+			$nbt->getCompoundTag("components")->setTag(new CompoundTag("minecraft:wearable", [
+				new StringTag("slot", "slot.armor.{$data["armor_position"]}")
+			]));
+		}
+
 		$runtimeId = $id + ($id > 0 ? 5000 : -5000);
 
 		$this->id = $id;
