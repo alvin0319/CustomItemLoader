@@ -128,7 +128,7 @@ class CustomItemLoader extends PluginBase implements Listener{
 		$can_always_eat = (int) ($data["can_always_eat"] ?? false);
 		$nutrition = (int) ($data["nutrition"] ?? 1);
 		$saturation = (float) ($data["saturation"] ?? 1);
-		$residue = isset($data["residue"]) ? ItemFactory::getInstance()->get((int) $data["residue"]["id"], (int) ($data["residue"]["meta"] ?? 0)) : ItemFactory::get(0);
+		$residue = isset($data["residue"]) ? ItemFactory::getInstance()->get((int) $data["residue"]["id"], (int) ($data["residue"]["meta"] ?? 0)) : ItemFactory::getInstance()->get(0);
 
 		$nbt = CompoundTag::create()
 			->setTag("components", CompoundTag::create()
