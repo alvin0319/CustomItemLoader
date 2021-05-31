@@ -24,3 +24,6 @@ You can see example on [example folder](./example)
 
 * Q. Item name is displayed wrongly
 * A. Make sure to register item name on en_US.lang or other language file
+
+* Q. Item texture doesn't appear on proxy
+* A. Unfortunately, current system cannot support proxy
