@@ -24,7 +24,7 @@ use pocketmine\command\CommandSender;
 use pocketmine\command\utils\InvalidCommandSyntaxException;
 use pocketmine\network\mcpe\protocol\ProtocolInfo;
 use pocketmine\utils\Filesystem;
-use pocketmine\uuid\UUID;
+use Ramsey\Uuid\Uuid;
 use RecursiveDirectoryIterator;
 use RecursiveIteratorIterator;
 use SplFileInfo;
@@ -41,8 +41,6 @@ use function json_encode;
 use function mkdir;
 use function substr;
 use function trim;
-use const JSON_BIGINT_AS_STRING;
-use const JSON_PRETTY_PRINT;
 
 class ResourcePackCreateCommand extends Command{
 
@@ -84,7 +82,7 @@ class ResourcePackCreateCommand extends Command{
 					"header" => [
 						"description" => $pack_description,
 						"name" => $pack_name,
-						"uuid" => UUID::fromRandom()->toString(),
+						"uuid" => Uuid::uuid4()->toString(),
 						"version" => [0, 0, 1],
 						"min_engine_version" => [(int) $protocolInfo[0], (int) $protocolInfo[1], (int) $protocolInfo[2]]
 					],
@@ -92,7 +90,7 @@ class ResourcePackCreateCommand extends Command{
 						[
 							"description" => $pack_description,
 							"type" => "resources",
-							"uuid" => UUID::fromRandom()->toString(),
+							"uuid" => Uuid::uuid4()->toString(),
 							"version" => [0, 0, 1]
 						]
 					]

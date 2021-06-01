@@ -27,9 +27,10 @@ use pocketmine\event\player\PlayerJoinEvent;
 use pocketmine\event\server\DataPacketSendEvent;
 use pocketmine\item\ItemFactory;
 use pocketmine\nbt\tag\CompoundTag;
+use pocketmine\network\mcpe\convert\GlobalItemTypeDictionary;
 use pocketmine\network\mcpe\convert\ItemTranslator;
-use pocketmine\network\mcpe\convert\ItemTypeDictionary;
 use pocketmine\network\mcpe\protocol\ItemComponentPacket;
+use pocketmine\network\mcpe\protocol\serializer\ItemTypeDictionary;
 use pocketmine\network\mcpe\protocol\StartGamePacket;
 use pocketmine\network\mcpe\protocol\types\Experiments;
 use pocketmine\network\mcpe\protocol\types\ItemComponentPacketEntry;
@@ -87,7 +88,7 @@ class CustomItemLoader extends PluginBase implements Listener{
 		$intToStringIdMap->setAccessible(true);
 		$stringToIntMap->setAccessible(true);
 
-		$this->itemTypeEntries = $itemTypes->getValue(ItemTypeDictionary::getInstance());
+		$this->itemTypeEntries = $itemTypes->getValue(GlobalItemTypeDictionary::getInstance()->getDictionary());
 
 		$packetEntries = [];
 
@@ -98,7 +99,7 @@ class CustomItemLoader extends PluginBase implements Listener{
 
 		$simpleNetToCoreMap->setValue(ItemTranslator::getInstance(), $this->netToCoreValues);
 		$simpleCoreToNetMap->setValue(ItemTranslator::getInstance(), $this->coreToNetValues);
-		$itemTypes->setValue(ItemTypeDictionary::getInstance(), $this->itemTypeEntries);
+		$itemTypes->setValue(GlobalItemTypeDictionary::getInstance()->getDictionary(), $this->itemTypeEntries);
 
 		$this->packet = ItemComponentPacket::create($packetEntries);
 	}
@@ -128,7 +129,7 @@ class CustomItemLoader extends PluginBase implements Listener{
 		$can_always_eat = (int) ($data["can_always_eat"] ?? false);
 		$nutrition = (int) ($data["nutrition"] ?? 1);
 		$saturation = (float) ($data["saturation"] ?? 1);
-		$residue = isset($data["residue"]) ? ItemFactory::getInstance()->get((int) $data["residue"]["id"], (int) ($data["residue"]["meta"] ?? 0)) : ItemFactory::getInstance()->get(0);
+		$residue = isset($data["residue"]) ? ItemFactory::getInstance()->get((int) $data["residue"]["id"], (int) ($data["residue"]["meta"] ?? 0)) : ItemFactory::get(0);
 
 		$nbt = CompoundTag::create()
 			->setTag("components", CompoundTag::create()
