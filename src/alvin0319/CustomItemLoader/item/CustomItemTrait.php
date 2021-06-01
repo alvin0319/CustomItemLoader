@@ -18,33 +18,19 @@ declare(strict_types=1);
 
 namespace alvin0319\CustomItemLoader\item;
 
-use pocketmine\block\Block;
-use pocketmine\entity\Entity;
-use pocketmine\item\Durable;
+use alvin0319\CustomItemLoader\item\properties\CustomItemProperties;
+use pocketmine\item\ItemIdentifier;
 
-class CustomDurableItem extends Durable{
-	use CustomItemTrait;
+trait CustomItemTrait{
+	/** @var CustomItemProperties */
+	protected $properties;
 
-	public function getMaxStackSize() : int{
-		return $this->getProperties()->getMaxStackSize();
+	public function __construct(string $name, array $data){
+		$this->properties = new CustomItemProperties($name, $data);
+		parent::__construct(new ItemIdentifier($this->properties->getId(), $this->properties->getMeta()), $this->properties->getName());
 	}
 
-	public function getMaxDurability() : int{
-		return $this->getProperties()->getMaxDurability();
-	}
-
-	public function onDestroyBlock(Block $block) : bool{
-		return $this->applyDamage(1);
-	}
-
-	public function onAttackEntity(Entity $victim) : bool{
-		return $this->applyDamage(1);
-	}
-
-	public function getMiningEfficiency(bool $isCorrectTool) : float{
-		if($isCorrectTool){
-			return $this->getProperties()->getMiningSpeed();
-		}
-		return parent::getMiningEfficiency($isCorrectTool);
+	public function getProperties() : CustomItemProperties{
+		return $this->properties;
 	}
 }
