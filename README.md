@@ -27,3 +27,6 @@ You can see example on [example folder](./example)
 
 * Q. Item texture doesn't appear on proxy
 * A. Unfortunately, current system cannot support proxy
+
+* Q. I set its config correctly or I used example but item texture does not appear
+* A. If you are using this plugin behind proxy such as WDPE, you should run this plugin also on lobby server [L#50~54](https://github.com/alvin0319/CustomItemLoader/blob/master/src/alvin0319/CustomItemLoader/CustomItemLoader.php#L50)

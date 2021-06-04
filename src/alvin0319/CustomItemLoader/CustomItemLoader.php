@@ -46,6 +46,17 @@ class CustomItemLoader extends PluginBase implements Listener{
 
 		$this->getServer()->getCommandMap()->register("customitemloader", new ResourcePackCreateCommand());
 
+		if($this->getServer()->getPort() !== 19132){
+			// TODO: proxy support
+			// maybe behind on the proxy
+			// Proxies such as WDPE will send StartGamePacket only once and won't send again (maybe its logic?)
+			// so if this plugin is behind on proxy and is not lobby server the item texture won't appear
+			// the solution for this is use this plugin also on lobby server so that player can receive modified StartGamePacket
+			$this->getLogger()->notice("Plugin detected that you are not running server on 19132.");
+			$this->getLogger()->notice("If you are running this server behind proxy, make sure to use this plugin on lobby.");
+			$this->getLogger()->notice("Otherwise, item texture won't appear.");
+		}
+
 		CustomItemManager::init();
 		CustomItemManager::registerDefaultItems($this->getConfig()->get("items", []));
 	}
