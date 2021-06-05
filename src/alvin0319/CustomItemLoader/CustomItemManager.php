@@ -115,7 +115,12 @@ final class CustomItemManager{
 		return clone self::$packet;
 	}
 
-	public static function registerDefaultItems(array $data) : void{
+	public static function registerDefaultItems(array $data, bool $reload = false) : void{
+		if($reload){
+			ItemTranslator::reset();
+			ItemTypeDictionary::reset();
+			self::init();
+		}
 		foreach($data as $name => $itemData){
 			self::registerItem(self::getItem($name, $itemData));
 		}
