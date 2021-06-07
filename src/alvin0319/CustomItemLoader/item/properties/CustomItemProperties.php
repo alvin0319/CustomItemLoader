@@ -26,7 +26,6 @@ use pocketmine\nbt\tag\FloatTag;
 use pocketmine\nbt\tag\IntTag;
 use pocketmine\nbt\tag\ShortTag;
 use pocketmine\nbt\tag\StringTag;
-use pocketmine\utils\AssumptionFailedError;
 use ReflectionClass;
 
 final class CustomItemProperties{
@@ -107,12 +106,8 @@ final class CustomItemProperties{
 		$defence_points = $data["defence_points"] ?? 0;
 
 		$isBlock = $data["isBlock"] ?? false;
-		if($isBlock){
-			if(!isset($data["blockId"])){
-				throw new AssumptionFailedError("ItemBlock should have 'blockId' property");
-			}
-		}
-		$blockId = $isBlock ? $data["blockId"] : -1;
+
+		$blockId = $isBlock ? $data["blockId"] : 0;
 
 		$nbt = new CompoundTag("", [
 			new CompoundTag("components", [
