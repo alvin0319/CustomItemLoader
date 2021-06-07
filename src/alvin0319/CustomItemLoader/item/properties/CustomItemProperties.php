@@ -71,6 +71,10 @@ final class CustomItemProperties{
 	protected $defence_points;
 	/** @var CompoundTag */
 	protected $nbt;
+	/** @var bool */
+	protected $isBlock = false;
+	/** @var int */
+	protected $blockId;
 
 	public function __construct(string $name, array $data){
 		$this->name = $name;
@@ -100,6 +104,10 @@ final class CustomItemProperties{
 
 		$armor = isset($data["armor"]) ? $data["armor"] : false;
 		$defence_points = $data["defence_points"] ?? 0;
+
+		$isBlock = $data["isBlock"] ?? false;
+
+		$blockId = $isBlock ? $data["blockId"] : 0;
 
 		$nbt = new CompoundTag("", [
 			new CompoundTag("components", [
@@ -167,6 +175,9 @@ final class CustomItemProperties{
 
 		$this->armor = $armor;
 		$this->defence_points = $defence_points;
+
+		$this->isBlock = $isBlock;
+		$this->blockId = $blockId;
 
 		$this->nbt = $nbt;
 	}
@@ -249,6 +260,14 @@ final class CustomItemProperties{
 
 	public function getDefencePoints() : int{
 		return $this->defence_points;
+	}
+
+	public function isBlock() : bool{
+		return $this->isBlock;
+	}
+
+	public function getBlockId() : int{
+		return $this->blockId;
 	}
 
 	public function getNbt() : CompoundTag{

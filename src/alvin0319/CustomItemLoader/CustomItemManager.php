@@ -22,6 +22,7 @@ use alvin0319\CustomItemLoader\item\CustomArmorItem;
 use alvin0319\CustomItemLoader\item\CustomDurableItem;
 use alvin0319\CustomItemLoader\item\CustomFoodItem;
 use alvin0319\CustomItemLoader\item\CustomItem;
+use alvin0319\CustomItemLoader\item\CustomItemBlock;
 use alvin0319\CustomItemLoader\item\CustomItemTrait;
 use alvin0319\CustomItemLoader\item\properties\CustomItemProperties;
 use pocketmine\item\Item;
@@ -136,6 +137,9 @@ final class CustomItemManager{
 		}
 		if($prop->isArmor()){
 			return new CustomArmorItem($name, $data);
+		}
+		if($prop->isBlock()){
+			return new CustomItemBlock($name, $data);
 		}
 		return new CustomItem($name, $data);
 	}
