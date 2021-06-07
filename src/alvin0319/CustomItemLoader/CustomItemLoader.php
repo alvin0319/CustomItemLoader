@@ -18,6 +18,7 @@ declare(strict_types=1);
 
 namespace alvin0319\CustomItemLoader;
 
+use alvin0319\CustomItemLoader\command\CustomItemLoaderCommand;
 use alvin0319\CustomItemLoader\command\ResourcePackCreateCommand;
 use pocketmine\event\Listener;
 use pocketmine\event\player\PlayerJoinEvent;
@@ -44,7 +45,10 @@ class CustomItemLoader extends PluginBase implements Listener{
 			mkdir($this->getResourcePackFolder());
 		}
 
-		$this->getServer()->getCommandMap()->register("customitemloader", new ResourcePackCreateCommand());
+		$this->getServer()->getCommandMap()->registerAll("customitemloader", [
+			new ResourcePackCreateCommand(),
+			new CustomItemLoaderCommand()
+		]);
 
 		if($this->getServer()->getPort() !== 19132){
 			// TODO: proxy support
