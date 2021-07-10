@@ -8,7 +8,7 @@ All of these components were came from MCPE addon document and [wiki.vg](https:/
 
 ## How to use
 
-You can see all usage on my [wiki](https://github.com/alvin0319/CustomItemLoader/wiki)
+You can see all usage on [here](./CONFIGURATION.md)
 
 You can see example on [example folder](./example)
 
