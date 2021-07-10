@@ -156,7 +156,7 @@ items:
       meta: 0
 ```
 
-## Placeable block
+## Placeable item
 ```yaml
 items:
   <your_item_name>:
