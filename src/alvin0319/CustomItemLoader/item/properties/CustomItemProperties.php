@@ -109,6 +109,8 @@ final class CustomItemProperties{
 
 		$blockId = $isBlock ? $data["blockId"] : 0;
 
+		$add_creative_inventory = ($data["add_creative_inventory"] ?? false);
+
 		$nbt = new CompoundTag("", [
 			new CompoundTag("components", [
 				new CompoundTag("minecraft:icon", [
@@ -180,6 +182,11 @@ final class CustomItemProperties{
 		$this->blockId = $blockId;
 
 		$this->nbt = $nbt;
+
+		if($add_creative_inventory){
+			/** @var Item $this */
+			Item::addCreativeItem($this);
+		}
 	}
 
 	public function getName() : string{

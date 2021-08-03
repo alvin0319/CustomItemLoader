@@ -34,6 +34,12 @@ You can set it by adding
 allow_off_hand: true
 ```
 
+When you want to add your custom item to creative inventory, you have to enable `add_creative_inventory`
+You can set it by adding
+```yaml
+add_creative_inventory: true
+```
+
 I suggest to use my [Offhand](https://poggit.pmmp.io/p/OffHand) to enable Offhand
 
 To make an item usable for breaking blocks even in creative mode, you have to enable `can_destroy_in_creative`
