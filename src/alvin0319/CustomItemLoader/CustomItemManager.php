@@ -92,7 +92,7 @@ final class CustomItemManager{
 			self::$coreToNetValues[$id] = $runtimeId;
 			self::$netToCoreValues[$runtimeId] = $id;
 
-			self::$itemTypeEntries[] = $entry = new ItemTypeEntry($item->getProperties()->getNamespace(), $runtimeId, true);
+			self::$itemTypeEntries[] = new ItemTypeEntry($item->getProperties()->getNamespace(), $runtimeId, true);
 
 			self::$packetEntries[] = new ItemComponentPacketEntry($item->getProperties()->getNamespace(), $item->getProperties()->getNbt());
 
