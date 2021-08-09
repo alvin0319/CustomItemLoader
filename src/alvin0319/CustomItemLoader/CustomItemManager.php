@@ -39,23 +39,23 @@ use ReflectionProperty;
 
 final class CustomItemManager{
 	/** @var Item[] */
-	protected static $registered = [];
-	/** @var ItemComponentPacket */
-	protected static $packet;
-	/** @var ReflectionProperty */
-	protected static $coreToNetMap;
-	/** @var ReflectionProperty */
-	protected static $netToCoreMap;
-	/** @var array */
-	protected static $coreToNetValues = [];
-	/** @var array */
-	protected static $netToCoreValues = [];
-	/** @var ReflectionProperty */
-	protected static $itemTypeMap;
+	protected static array $registered = [];
+
+	protected static ItemComponentPacket $packet;
+
+	protected static ReflectionProperty $coreToNetMap;
+
+	protected static ReflectionProperty $netToCoreMap;
+
+	protected static array $coreToNetValues = [];
+
+	protected static array $netToCoreValues = [];
+
+	protected static ReflectionProperty $itemTypeMap;
 	/** @var ItemComponentPacketEntry[] */
-	protected static $packetEntries = [];
+	protected static array $packetEntries = [];
 	/** @var ItemTypeEntry[] */
-	protected static $itemTypeEntries = [];
+	protected static array $itemTypeEntries = [];
 
 	public static function getItems() : array{
 		return self::$registered;

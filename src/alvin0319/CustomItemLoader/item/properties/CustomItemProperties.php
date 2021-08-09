@@ -31,57 +31,57 @@ use ReflectionClass;
 
 final class CustomItemProperties{
 	/** @var string */
-	protected $name;
+	protected string $name;
 	/** @var int */
-	protected $id;
+	protected int $id;
 	/** @var int */
-	protected $meta;
+	protected int $meta;
 	/** @var string */
-	protected $namespace;
+	protected string $namespace;
 	/** @var int */
-	protected $runtimeId;
+	protected int $runtimeId;
 	/** @var bool */
-	protected $durable = false;
+	protected bool $durable = false;
 	/** @var int|null */
-	protected $max_durability = null;
+	protected ?int $max_durability = null;
 	/** @var bool */
-	protected $allow_off_hand = false;
+	protected bool $allow_off_hand = false;
 	/** @var bool */
-	protected $can_destroy_in_creative = false;
+	protected bool $can_destroy_in_creative = false;
 	/** @var int */
-	protected $creative_category = 1;
+	protected int $creative_category = 1;
 	/** @var bool */
-	protected $hand_equipped = true;
+	protected bool $hand_equipped = true;
 	/** @var int */
-	protected $max_stack_size = 64;
+	protected int $max_stack_size = 64;
 	/** @var int */
-	protected $mining_speed = 1;
+	protected int $mining_speed = 1;
 	/** @var bool */
-	protected $food = false;
+	protected bool $food = false;
 	/** @var bool */
-	protected $can_always_eat = false;
+	protected bool $can_always_eat = false;
 	/** @var int|null */
-	protected $nutrition = null;
+	protected ?int $nutrition = null;
 	/** @var float|null */
-	protected $saturation = null;
+	protected ?float $saturation = null;
 	/** @var Item|null */
-	protected $residue = null;
+	protected ?Item $residue = null;
 	/** @var bool */
-	protected $armor = false;
+	protected bool $armor = false;
 	/** @var int */
-	protected $defence_points;
+	protected int $defence_points;
 	/** @var CompoundTag */
-	protected $nbt;
+	protected CompoundTag $nbt;
 	/** @var bool */
-	protected $isBlock = false;
+	protected bool $isBlock = false;
 	/** @var int */
-	protected $blockId;
+	protected int $blockId;
 	/** @var bool */
-	protected $tool = false;
+	protected bool $tool = false;
 	/** @var int */
-	protected $toolType = BlockToolType::TYPE_NONE;
+	protected int $toolType = BlockToolType::TYPE_NONE;
 	/** @var int */
-	protected $toolTier = 0;
+	protected int $toolTier = 0;
 
 	public function __construct(string $name, array $data){
 		$this->name = $name;
