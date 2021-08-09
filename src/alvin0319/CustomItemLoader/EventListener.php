@@ -108,6 +108,7 @@ final class EventListener implements Listener{
 					}
 				}
 			}elseif($packet->action === PlayerActionPacket::ACTION_ABORT_BREAK){
+				$handled = true;
 				$this->stopTask($player, Position::fromObject($pos, $player->getLevelNonNull()));
 			}
 		}finally{
