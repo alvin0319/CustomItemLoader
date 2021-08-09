@@ -134,6 +134,18 @@ final class EventListener implements Listener{
 	}
 
 	private function scheduleTask(Position $pos, Item $item, Player $player, float $breakTime) : void{
+		/*
+		 * TODO: HACK
+		 * This is very hacky method and unverified method.
+		 * But We don't have any ways to implement this
+		 *
+		 * For travelers: This will make a delayed task which breaks block
+		 * This is not satisfied method, but no other ways to implement this
+		 * If you have find better method, Please make a PR!
+		 * Your contribution is very appreciated!
+		 *
+		 * Tl;DR: Hacky method
+		 */
 		// Credit: ๖ζ͜͡Apakoh
 		$handler = CustomItemLoader::getInstance()->getScheduler()->scheduleDelayedTask(new ClosureTask(function(int $_) use ($pos, $item, $player) : void{
 			$pos->getLevelNonNull()->useBreakOn($pos, $item, $player);
