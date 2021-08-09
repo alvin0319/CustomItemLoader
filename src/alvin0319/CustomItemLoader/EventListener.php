@@ -28,9 +28,7 @@ use pocketmine\event\server\DataPacketReceiveEvent;
 use pocketmine\item\Item;
 use pocketmine\level\Position;
 use pocketmine\math\Vector3;
-use pocketmine\network\mcpe\convert\RuntimeBlockMapping;
 use pocketmine\network\mcpe\protocol\LevelEventPacket;
-use pocketmine\network\mcpe\protocol\LevelSoundEventPacket;
 use pocketmine\network\mcpe\protocol\PlayerActionPacket;
 use pocketmine\Player;
 use pocketmine\scheduler\ClosureTask;
@@ -138,8 +136,6 @@ final class EventListener implements Listener{
 	private function scheduleTask(Position $pos, Item $item, Player $player, float $breakTime) : void{
 		// Credit: ๖ζ͜͡Apakoh
 		$handler = CustomItemLoader::getInstance()->getScheduler()->scheduleDelayedTask(new ClosureTask(function(int $_) use ($pos, $item, $player) : void{
-			$block = $pos->getLevelNonNull()->getBlock($pos);
-			$pos->getLevelNonNull()->broadcastLevelSoundEvent($pos, LevelSoundEventPacket::SOUND_BREAK_BLOCK, RuntimeBlockMapping::toStaticRuntimeId($block->getId(), $block->getDamage()));
 			$pos->getLevelNonNull()->useBreakOn($pos, $item, $player);
 			unset($this->handlers[$player->getName()][$this->blockHash($pos)]);
 		}), (int) floor($breakTime));
