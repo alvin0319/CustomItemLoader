@@ -84,7 +84,7 @@ final class CustomItemManager{
 
 	public static function isCustomItem(Item $item) : bool{
 		foreach(self::$registered as $other){
-			if($item->equals($other, !$item->hasAnyDamageValue(), $item->hasCompoundTag())){
+			if($item->equals($other, false, $item->hasCompoundTag())){
 				return true;
 			}
 		}
