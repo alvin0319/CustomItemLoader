@@ -18,6 +18,7 @@ declare(strict_types=1);
 
 namespace alvin0319\CustomItemLoader\item\properties;
 
+use pocketmine\block\BlockToolType;
 use pocketmine\item\Item;
 use pocketmine\item\ItemFactory;
 use pocketmine\nbt\tag\ByteTag;
@@ -75,6 +76,12 @@ final class CustomItemProperties{
 	protected $isBlock = false;
 	/** @var int */
 	protected $blockId;
+	/** @var bool */
+	protected $tool = false;
+	/** @var int */
+	protected $toolType = BlockToolType::TYPE_NONE;
+	/** @var int */
+	protected $toolTier = 0;
 
 	public function __construct(string $name, array $data){
 		$this->name = $name;
@@ -110,6 +117,10 @@ final class CustomItemProperties{
 		$blockId = $isBlock ? $data["blockId"] : 0;
 
 		$add_creative_inventory = ($data["add_creative_inventory"] ?? false);
+
+		$tool = $data["tool"] ?? false;
+		$tool_type = $data["tool_type"] ?? BlockToolType::TYPE_NONE;
+		$tool_tier = $data["tool_tier"] ?? 0;
 
 		$nbt = new CompoundTag("", [
 			new CompoundTag("components", [
@@ -180,6 +191,10 @@ final class CustomItemProperties{
 
 		$this->isBlock = $isBlock;
 		$this->blockId = $blockId;
+
+		$this->tool = $tool;
+		$this->toolType = $tool_type;
+		$this->toolTier = $tool_tier;
 
 		$this->nbt = $nbt;
 
@@ -275,6 +290,18 @@ final class CustomItemProperties{
 
 	public function getBlockId() : int{
 		return $this->blockId;
+	}
+
+	public function getBlockToolType() : int{
+		return $this->toolType;
+	}
+
+	public function getBlockToolHarvestLevel() : int{
+		return $this->toolTier;
+	}
+
+	public function isTool() : bool{
+		return $this->tool;
 	}
 
 	public function getNbt() : CompoundTag{

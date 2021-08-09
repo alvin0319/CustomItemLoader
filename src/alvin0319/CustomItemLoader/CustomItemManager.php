@@ -24,6 +24,7 @@ use alvin0319\CustomItemLoader\item\CustomFoodItem;
 use alvin0319\CustomItemLoader\item\CustomItem;
 use alvin0319\CustomItemLoader\item\CustomItemBlock;
 use alvin0319\CustomItemLoader\item\CustomItemTrait;
+use alvin0319\CustomItemLoader\item\CustomToolItem;
 use alvin0319\CustomItemLoader\item\properties\CustomItemProperties;
 use pocketmine\item\Item;
 use pocketmine\item\ItemFactory;
@@ -79,6 +80,15 @@ final class CustomItemManager{
 		self::$packetEntries = [];
 
 		self::$packet = ItemComponentPacket::create(self::$packetEntries);
+	}
+
+	public static function isCustomItem(Item $item) : bool{
+		foreach(self::$registered as $other){
+			if($item->equals($other, !$item->hasAnyDamageValue(), $item->hasCompoundTag())){
+				return true;
+			}
+		}
+		return false;
 	}
 
 	/**
@@ -140,6 +150,9 @@ final class CustomItemManager{
 		}
 		if($prop->isBlock()){
 			return new CustomItemBlock($name, $data);
+		}
+		if($prop->isTool()){
+			return new CustomToolItem($name, $data);
 		}
 		return new CustomItem($name, $data);
 	}

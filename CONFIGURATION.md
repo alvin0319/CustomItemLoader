@@ -125,12 +125,49 @@ residue:
 
 `residue` will give item when player eats food like beetroot soup
 
+## Tool item
+To make item as tool, You have to enable `tool`
+
+```yaml
+tool: true
+```
+
+If item is tool, you can set the item's mining speed too.
+
+```yaml
+mining_speed: 2
+```
+
+There are some properties that you have to add
+
+`tool_type` is used to identify tool type, like sword or pickaxe
+
+Types:
+
+`0`: None
+`1`: Sword
+`2`: Shovel
+`4`: Pickaxe
+`8`: Axe
+`16`: Shears
+`32`: Hoe
+
+`tool_tier` is used to identify tool tier, like wooden or diamond
+
+Types:
+`1`: Wooden
+`2`: Gold
+`3`: Stone
+`4`: Iron
+`5`: Diamond
+
+
 # Templates
 You can use this template to make your custom item
 
 Replace `<something>` to your own value
 
-## Any tools or Durables
+## Durable
 
 ```yaml
 items:
@@ -172,4 +209,17 @@ items:
     name: <name>
     isBlock: true
     blockId: 1
+```
+
+## Tool
+```yaml
+items:
+  <your_item_name>:
+    id: <id>
+    meta: <meta>
+    namespace: <namespace>
+    mining_speed: <speed>
+    tool_type: 4 # This will make this tool as pickaxe, replace it as you want
+    tool_tier: 5 # This will make this tool's tier as Diamond, replace it as you want
+    tool: true
 ```

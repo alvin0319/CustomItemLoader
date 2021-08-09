@@ -30,7 +30,7 @@ use pocketmine\utils\SingletonTrait;
 use function is_dir;
 use function mkdir;
 
-class CustomItemLoader extends PluginBase implements Listener{
+class CustomItemLoader extends PluginBase{
 	use SingletonTrait;
 
 	public function onLoad() : void{
@@ -38,7 +38,6 @@ class CustomItemLoader extends PluginBase implements Listener{
 	}
 
 	public function onEnable() : void{
-		$this->getServer()->getPluginManager()->registerEvents($this, $this);
 		$this->saveDefaultConfig();
 
 		if(!is_dir($this->getResourcePackFolder())){
@@ -61,15 +60,12 @@ class CustomItemLoader extends PluginBase implements Listener{
 
 		CustomItemManager::init();
 		CustomItemManager::registerDefaultItems($this->getConfig()->get("items", []));
+
+		$this->getServer()->getPluginManager()->registerEvents(new EventListener(), $this);
 	}
 
 	public function getResourcePackFolder() : string{
 		return $this->getDataFolder() . "resource_packs/";
-	}
-
-	public function onPlayerJoin(PlayerJoinEvent $event) : void{
-		$player = $event->getPlayer();
-		$player->sendDataPacket(CustomItemManager::getPacket());
 	}
 
 	public function onDataPacketSend(DataPacketSendEvent $event) : void{
