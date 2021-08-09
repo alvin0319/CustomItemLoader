@@ -55,7 +55,7 @@ final class CustomItemProperties{
 	/** @var int */
 	protected int $max_stack_size = 64;
 	/** @var int */
-	protected int $mining_speed = 1;
+	protected float $mining_speed = 1;
 	/** @var bool */
 	protected bool $food = false;
 	/** @var bool */
