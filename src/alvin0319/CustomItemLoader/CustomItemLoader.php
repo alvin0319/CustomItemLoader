@@ -58,8 +58,7 @@ class CustomItemLoader extends PluginBase{
 			$this->getLogger()->notice("Detected this server isn't running on 19132 port. If you are running this server behind proxy, make sure to use this plugin on lobby.");
 		}
 
-		CustomItemManager::init();
-		CustomItemManager::registerDefaultItems($this->getConfig()->get("items", []));
+		CustomItemManager::getInstance()->registerDefaultItems($this->getConfig()->get("items", []));
 
 		$this->getServer()->getPluginManager()->registerEvents(new EventListener(), $this);
 	}

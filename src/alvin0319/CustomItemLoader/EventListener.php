@@ -60,7 +60,7 @@ final class EventListener implements Listener{
 			$player = $event->getPlayer();
 			if($packet->action === PlayerActionPacket::ACTION_START_BREAK){
 				$item = $player->getInventory()->getItemInHand();
-				if(!CustomItemManager::isCustomItem($item)){
+				if(!CustomItemManager::getInstance()->isCustomItem($item)){
 					return;
 				}
 				if($pos->distanceSquared($player) > 10000){
@@ -120,7 +120,7 @@ final class EventListener implements Listener{
 
 	public function onPlayerJoin(PlayerJoinEvent $event) : void{
 		$player = $event->getPlayer();
-		$player->sendDataPacket(CustomItemManager::getPacket());
+		$player->sendDataPacket(CustomItemManager::getInstance()->getPacket());
 	}
 
 	public function onPlayerQuit(PlayerQuitEvent $event) : void{
