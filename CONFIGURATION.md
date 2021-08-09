@@ -66,41 +66,6 @@ To make item like sword, You have to enable `hand_equipped`
 hand_equipped: true
 ```
 
-To make item as tool, You have to enable `tool`
-
-```yaml
-tool: true
-```
-
-If item is tool, you can set the item's mining speed too.
-
-```yaml
-mining_speed: 2
-```
-
-There are some properties that you have to add
-
-`tool_type` is used to identify tool type, like sword or pickaxe
-
-Types:
-
-`0`: None
-`1`: Sword
-`2`: Shovel
-`4`: Pickaxe
-`8`: Axe
-`16`: Shears
-`32`: Hoe
-
-`tool_tier` is used to identify tool tier, like wooden or diamond
-
-Types:
-`1`: Wooden
-`2`: Gold
-`3`: Stone
-`4`: Iron
-`5`: Diamond
-
 ## Durable item
 To make durable item, you have to enable `durable` to make item as durable.
 
@@ -159,6 +124,43 @@ residue:
 `saturation` will fill saturation progress
 
 `residue` will give item when player eats food like beetroot soup
+
+## Tool item
+To make item as tool, You have to enable `tool`
+
+```yaml
+tool: true
+```
+
+If item is tool, you can set the item's mining speed too.
+
+```yaml
+mining_speed: 2
+```
+
+There are some properties that you have to add
+
+`tool_type` is used to identify tool type, like sword or pickaxe
+
+Types:
+
+`0`: None
+`1`: Sword
+`2`: Shovel
+`4`: Pickaxe
+`8`: Axe
+`16`: Shears
+`32`: Hoe
+
+`tool_tier` is used to identify tool tier, like wooden or diamond
+
+Types:
+`1`: Wooden
+`2`: Gold
+`3`: Stone
+`4`: Iron
+`5`: Diamond
+
 
 # Templates
 You can use this template to make your custom item
