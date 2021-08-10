@@ -19,6 +19,7 @@ declare(strict_types=1);
 namespace alvin0319\CustomItemLoader\item;
 
 use alvin0319\CustomItemLoader\item\properties\CustomItemProperties;
+use pocketmine\item\Item;
 
 trait CustomItemTrait{
 
@@ -29,6 +30,9 @@ trait CustomItemTrait{
 		$this->id = $this->properties->getId();
 		$this->meta = $this->properties->getMeta();
 		$this->name = $this->properties->getName();
+		if($this->properties->getAddCreativeInventory()){
+			Item::addCreativeItem($this);
+		}
 	}
 
 	public function getProperties() : CustomItemProperties{

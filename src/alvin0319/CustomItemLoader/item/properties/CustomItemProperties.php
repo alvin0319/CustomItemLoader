@@ -83,6 +83,8 @@ final class CustomItemProperties{
 	/** @var int */
 	protected int $toolTier = 0;
 
+	protected bool $add_creative_inventory = false;
+
 	public function __construct(string $name, array $data){
 		$this->name = $name;
 		$this->parseData($data);
@@ -192,16 +194,13 @@ final class CustomItemProperties{
 		$this->isBlock = $isBlock;
 		$this->blockId = $blockId;
 
+		$this->add_creative_inventory = $add_creative_inventory;
+
 		$this->tool = $tool;
 		$this->toolType = $tool_type;
 		$this->toolTier = $tool_tier;
 
 		$this->nbt = $nbt;
-
-		if($add_creative_inventory){
-			/** @var Item $this */
-			Item::addCreativeItem($this);
-		}
 	}
 
 	public function getName() : string{
@@ -302,6 +301,10 @@ final class CustomItemProperties{
 
 	public function isTool() : bool{
 		return $this->tool;
+	}
+
+	public function getAddCreativeInventory() : bool{
+		return $this->add_creative_inventory;
 	}
 
 	public function getNbt() : CompoundTag{
