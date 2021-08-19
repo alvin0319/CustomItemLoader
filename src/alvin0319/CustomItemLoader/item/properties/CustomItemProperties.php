@@ -185,8 +185,12 @@ final class CustomItemProperties{
 			if(!in_array($data["armor_position"], ["head", "chest", "legs", "feet"])){
 				throw new AssumptionFailedError("Position is invalid");
 			}
-			$nbt->getCompoundTag("components")->setTag(new CompoundTag("minecraft:wearable", [
-				new StringTag("slot", "slot.armor.{$data["armor_position"]}")
+
+			$nbt->setTag(new CompoundTag("minecraft:armor", [
+				new CompoundTag("minecraft:wearable", [
+					new StringTag("slot", "slot.armor.chest"),
+					new ShortTag("dispensable", 1)
+				])
 			]));
 		}
 
