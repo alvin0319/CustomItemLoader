@@ -18,24 +18,15 @@ declare(strict_types=1);
 
 namespace alvin0319\CustomItemLoader\item;
 
-use alvin0319\CustomItemLoader\item\properties\CustomItemProperties;
-use pocketmine\item\Item;
+use pocketmine\item\ItemBlock;
 
-trait CustomItemTrait{
-
-	protected CustomItemProperties $properties;
-
-	public function __construct(string $name, array $data){
-		$this->properties = new CustomItemProperties($name, $data);
-		$this->id = $this->properties->getId();
-		$this->meta = $this->properties->getMeta();
-		$this->name = $this->properties->getName();
-		if($this->properties->getAddCreativeInventory()){
-			Item::addCreativeItem($this);
-		}
+final class CustomItemBlock extends ItemBlock{
+	use CustomItemTrait {
+		__construct as CustomItemTrait___construct;
 	}
 
-	public function getProperties() : CustomItemProperties{
-		return $this->properties;
+	public function __construct(string $name, array $data){
+		$this->CustomItemTrait___construct($name, $data);
+		parent::__construct($this->properties->getBlockId(), $this->properties->getMeta(), $this->properties->getId());
 	}
 }

@@ -18,24 +18,20 @@ declare(strict_types=1);
 
 namespace alvin0319\CustomItemLoader\item;
 
-use alvin0319\CustomItemLoader\item\properties\CustomItemProperties;
-use pocketmine\item\Item;
+use pocketmine\item\Tool;
 
-trait CustomItemTrait{
+final class CustomToolItem extends Tool{
+	use CustomItemTrait;
 
-	protected CustomItemProperties $properties;
-
-	public function __construct(string $name, array $data){
-		$this->properties = new CustomItemProperties($name, $data);
-		$this->id = $this->properties->getId();
-		$this->meta = $this->properties->getMeta();
-		$this->name = $this->properties->getName();
-		if($this->properties->getAddCreativeInventory()){
-			Item::addCreativeItem($this);
-		}
+	public function getMaxDurability() : int{
+		return $this->getProperties()->getMaxDurability();
 	}
 
-	public function getProperties() : CustomItemProperties{
-		return $this->properties;
+	public function getBlockToolHarvestLevel() : int{
+		return $this->getProperties()->getBlockToolHarvestLevel();
+	}
+
+	public function getBlockToolType() : int{
+		return $this->getProperties()->getBlockToolType();
 	}
 }
