@@ -3,6 +3,13 @@ Plugin for PocketMine-MP that make your own custom item with full feature!
 
 <a href="https://poggit.pmmp.io/p/CustomItemLoader"><img src="https://poggit.pmmp.io/shield.state/CustomItemLoader"></a><a href="https://poggit.pmmp.io/p/CustomItemLoader"><img src="https://poggit.pmmp.io/shield.dl/CustomItemLoader"></a>
 
+# CustomItemLoader for PM3 is now on feature-freeze
+Since PM4 is in the BETA and I use PM4 as my base, I will maintain the PM4 branch as default.
+
+PM3 version will get only protocol update until PM4 releases.
+
+If PM4 fully released, PM3 branch will be deleted.
+
 ## How to use
 
 You can see all usage on [here](./CONFIGURATION.md)
