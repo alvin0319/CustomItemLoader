@@ -18,6 +18,7 @@ declare(strict_types=1);
 
 namespace alvin0319\CustomItemLoader\item\properties;
 
+use pocketmine\block\BlockToolType;
 use pocketmine\item\Item;
 use pocketmine\item\ItemFactory;
 use pocketmine\nbt\tag\CompoundTag;
@@ -48,7 +49,7 @@ final class CustomItemProperties{
 	protected bool $hand_equipped = true;
 	/** @var int */
 	protected int $max_stack_size = 64;
-	/** @var float */
+	/** @var int */
 	protected float $mining_speed = 1;
 	/** @var bool */
 	protected bool $food = false;
@@ -66,6 +67,18 @@ final class CustomItemProperties{
 	protected int $defence_points;
 	/** @var CompoundTag */
 	protected CompoundTag $nbt;
+	/** @var bool */
+	protected bool $isBlock = false;
+	/** @var int */
+	protected int $blockId;
+	/** @var bool */
+	protected bool $tool = false;
+	/** @var int */
+	protected int $toolType = BlockToolType::TYPE_NONE;
+	/** @var int */
+	protected int $toolTier = 0;
+
+	protected bool $add_creative_inventory = false;
 
 	public function __construct(string $name, array $data){
 		$this->name = $name;
@@ -96,8 +109,15 @@ final class CustomItemProperties{
 		$armor = isset($data["armor"]) ? $data["armor"] : false;
 		$defence_points = $data["defence_points"] ?? 0;
 
-		//var_dump($imageWidth, $imageHeight, $x, $y, $z);
+		$isBlock = $data["isBlock"] ?? false;
 
+		$blockId = $isBlock ? $data["blockId"] : 0;
+
+		$add_creative_inventory = ($data["add_creative_inventory"] ?? false);
+
+		$tool = $data["tool"] ?? false;
+		$tool_type = $data["tool_type"] ?? BlockToolType::NONE;
+		$tool_tier = $data["tool_tier"] ?? 0;
 		$nbt = CompoundTag::create()
 			->setTag("components", CompoundTag::create()
 				->setTag("item_properties", CompoundTag::create()
@@ -162,6 +182,15 @@ final class CustomItemProperties{
 
 		$this->armor = $armor;
 		$this->defence_points = $defence_points;
+
+		$this->isBlock = $isBlock;
+		$this->blockId = $blockId;
+
+		$this->add_creative_inventory = $add_creative_inventory;
+
+		$this->tool = $tool;
+		$this->toolType = $tool_type;
+		$this->toolTier = $tool_tier;
 
 		$this->nbt = $nbt;
 	}
@@ -244,6 +273,30 @@ final class CustomItemProperties{
 
 	public function getDefencePoints() : int{
 		return $this->defence_points;
+	}
+
+	public function isBlock() : bool{
+		return $this->isBlock;
+	}
+
+	public function getBlockId() : int{
+		return $this->blockId;
+	}
+
+	public function getBlockToolType() : int{
+		return $this->toolType;
+	}
+
+	public function getBlockToolHarvestLevel() : int{
+		return $this->toolTier;
+	}
+
+	public function isTool() : bool{
+		return $this->tool;
+	}
+
+	public function getAddCreativeInventory() : bool{
+		return $this->add_creative_inventory;
 	}
 
 	public function getNbt() : CompoundTag{

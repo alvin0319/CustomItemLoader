@@ -28,10 +28,7 @@ class CustomItem extends Item{
 		return $this->getProperties()->getMaxStackSize();
 	}
 
-	public function getMiningEfficiency(bool $isCorrectTool) : float{
-		if($isCorrectTool){
-			return $this->properties->getMiningSpeed();
-		}
-		return parent::getMiningEfficiency($isCorrectTool);
+	public function getMiningEfficiency(Block $block) : float{
+		return $this->properties->getMiningSpeed();
 	}
 }

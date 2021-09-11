@@ -23,7 +23,7 @@ use pocketmine\item\ItemIdentifier;
 
 trait CustomItemTrait{
 	/** @var CustomItemProperties */
-	protected $properties;
+	protected CustomItemProperties $properties;
 
 	public function __construct(string $name, array $data){
 		$this->properties = new CustomItemProperties($name, $data);

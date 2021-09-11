@@ -22,7 +22,9 @@ use alvin0319\CustomItemLoader\item\CustomArmorItem;
 use alvin0319\CustomItemLoader\item\CustomDurableItem;
 use alvin0319\CustomItemLoader\item\CustomFoodItem;
 use alvin0319\CustomItemLoader\item\CustomItem;
+use alvin0319\CustomItemLoader\item\CustomItemBlock;
 use alvin0319\CustomItemLoader\item\CustomItemTrait;
+use alvin0319\CustomItemLoader\item\CustomToolItem;
 use alvin0319\CustomItemLoader\item\properties\CustomItemProperties;
 use pocketmine\item\Item;
 use pocketmine\item\ItemFactory;
@@ -33,92 +35,115 @@ use pocketmine\network\mcpe\protocol\serializer\ItemTypeDictionary;
 use pocketmine\network\mcpe\protocol\types\ItemComponentPacketEntry;
 use pocketmine\network\mcpe\protocol\types\ItemTypeEntry;
 use pocketmine\utils\AssumptionFailedError;
+use pocketmine\utils\SingletonTrait;
 use ReflectionClass;
 use ReflectionProperty;
 
 final class CustomItemManager{
-	/** @var Item[] */
-	protected static array $registered = [];
-	/** @var ItemComponentPacket */
-	protected static ItemComponentPacket $packet;
-	/** @var ReflectionProperty */
-	protected static ReflectionProperty $coreToNetMap;
-	/** @var ReflectionProperty */
-	protected static ReflectionProperty $netToCoreMap;
-	/** @var array */
-	protected static array $coreToNetValues = [];
-	/** @var array */
-	protected static array $netToCoreValues = [];
-	/** @var ReflectionProperty */
-	protected static ReflectionProperty $itemTypeMap;
-	/** @var ItemComponentPacketEntry[] */
-	protected static array $packetEntries = [];
-	/** @var ItemTypeEntry[] */
-	protected static array $itemTypeEntries = [];
-
-	public static function getItems() : array{
-		return self::$registered;
+	use SingletonTrait {
+		getInstance as getInstance_; // FIXME: This will valid when IntelliJ fixes singleton bug
 	}
 
-	public static function init() : void{
-		$ref = new ReflectionClass(ItemTranslator::class);
-		self::$coreToNetMap = $ref->getProperty("simpleCoreToNetMapping");
-		self::$netToCoreMap = $ref->getProperty("simpleNetToCoreMapping");
-		self::$coreToNetMap->setAccessible(true);
-		self::$netToCoreMap->setAccessible(true);
+	public static function getInstance() : CustomItemManager{
+		return self::getInstance_();
+	}
 
-		self::$coreToNetValues = self::$coreToNetMap->getValue(ItemTranslator::getInstance());
-		self::$netToCoreValues = self::$netToCoreMap->getValue(ItemTranslator::getInstance());
+	/** @var Item[] */
+	protected array $registered = [];
+
+	protected ItemComponentPacket $packet;
+
+	protected ReflectionProperty $coreToNetMap;
+
+	protected ReflectionProperty $netToCoreMap;
+
+	protected array $coreToNetValues = [];
+
+	protected array $netToCoreValues = [];
+
+	protected ReflectionProperty $itemTypeMap;
+
+	/** @var ItemComponentPacketEntry[] */
+	protected array $packetEntries = [];
+	/** @var ItemTypeEntry[] */
+	protected array $itemTypeEntries = [];
+
+	public function __construct(){
+		$ref = new ReflectionClass(ItemTranslator::class);
+		$this->coreToNetMap = $ref->getProperty("simpleCoreToNetMapping");
+		$this->netToCoreMap = $ref->getProperty("simpleNetToCoreMapping");
+		$this->coreToNetMap->setAccessible(true);
+		$this->netToCoreMap->setAccessible(true);
+
+		$this->coreToNetValues = $this->coreToNetMap->getValue(ItemTranslator::getInstance());
+		$this->netToCoreValues = $this->netToCoreMap->getValue(ItemTranslator::getInstance());
 
 		$ref_1 = new ReflectionClass(ItemTypeDictionary::class);
-		self::$itemTypeMap = $ref_1->getProperty("itemTypes");
-		self::$itemTypeMap->setAccessible(true);
+		$this->itemTypeMap = $ref_1->getProperty("itemTypes");
+		$this->itemTypeMap->setAccessible(true);
 
-		self::$itemTypeEntries = self::$itemTypeMap->getValue(GlobalItemTypeDictionary::getInstance()->getDictionary());
+		$this->itemTypeEntries = $this->itemTypeMap->getValue(GlobalItemTypeDictionary::getInstance()->getDictionary());
 
-		self::$packetEntries = [];
+		$this->packetEntries = [];
 
-		self::$packet = ItemComponentPacket::create(self::$packetEntries);
+		$this->packet = ItemComponentPacket::create($this->packetEntries);
+	}
+
+	public function getItems() : array{
+		return $this->registered;
+	}
+
+	public function isCustomItem(Item $item) : bool{
+		foreach($this->registered as $other){
+			if($item->equals($other, false, $item->hasNamedTag())){
+				return true;
+			}
+		}
+		return false;
 	}
 
 	/**
 	 * @param CustomItemTrait|Item $item
 	 */
-	public static function registerItem($item) : void{
+	public function registerItem($item) : void{
 		try{
 			$id = $item->getProperties()->getId();
 			$runtimeId = $item->getProperties()->getRuntimeId();
 
-			self::$coreToNetValues[$id] = $runtimeId;
-			self::$netToCoreValues[$runtimeId] = $id;
+			$this->coreToNetValues[$id] = $runtimeId;
+			$this->netToCoreValues[$runtimeId] = $id;
 
-			self::$itemTypeEntries[] = $entry = new ItemTypeEntry($item->getProperties()->getNamespace(), $runtimeId, true);
+			$this->itemTypeEntries[] = new ItemTypeEntry($item->getProperties()->getNamespace(), $runtimeId, true);
 
-			self::$packetEntries[] = new ItemComponentPacketEntry($item->getProperties()->getNamespace(), $item->getProperties()->getNbt());
+			$this->packetEntries[] = new ItemComponentPacketEntry($item->getProperties()->getNamespace(), $item->getProperties()->getNbt());
 
-			self::$registered[] = $item;
+			$this->registered[] = $item;
 
 			ItemFactory::getInstance()->register($item, true);
 		}catch(\Throwable $e){
 			throw new AssumptionFailedError("Failed to register item: " . $e->getMessage(), $e->getLine(), $e);
 		}
-		self::refresh();
+		$this->refresh();
 	}
 
-	private static function refresh() : void{
-		self::$netToCoreMap->setValue(ItemTranslator::getInstance(), self::$netToCoreValues);
-		self::$coreToNetMap->setValue(ItemTranslator::getInstance(), self::$coreToNetValues);
-		self::$itemTypeMap->setValue(GlobalItemTypeDictionary::getInstance()->getDictionary(), self::$itemTypeEntries);
-		self::$packet = ItemComponentPacket::create(self::$packetEntries);
+	private function refresh() : void{
+		$this->netToCoreMap->setValue(ItemTranslator::getInstance(), $this->netToCoreValues);
+		$this->coreToNetMap->setValue(ItemTranslator::getInstance(), $this->coreToNetValues);
+		$this->itemTypeMap->setValue(GlobalItemTypeDictionary::getInstance()->getDictionary(), $this->itemTypeEntries);
+		$this->packet = ItemComponentPacket::create($this->packetEntries);
 	}
 
-	public static function getPacket() : ItemComponentPacket{
-		return clone self::$packet;
+	public function getPacket() : ItemComponentPacket{
+		return clone $this->packet;
 	}
 
-	public static function registerDefaultItems(array $data) : void{
+	public function registerDefaultItems(array $data, bool $reload = false) : void{
+		if($reload){
+			ItemTranslator::reset();
+			GlobalItemTypeDictionary::reset();
+		}
 		foreach($data as $name => $itemData){
-			self::registerItem(self::getItem($name, $itemData));
+			$this->registerItem(self::getItem($name, $itemData));
 		}
 	}
 
@@ -132,6 +157,12 @@ final class CustomItemManager{
 		}
 		if($prop->isArmor()){
 			return new CustomArmorItem($name, $data);
+		}
+		if($prop->isBlock()){
+			return new CustomItemBlock($name, $data);
+		}
+		if($prop->isTool()){
+			return new CustomToolItem($name, $data);
 		}
 		return new CustomItem($name, $data);
 	}

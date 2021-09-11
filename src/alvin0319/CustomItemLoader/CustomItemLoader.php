@@ -41,8 +41,8 @@ class CustomItemLoader extends PluginBase implements Listener{
 		$this->getServer()->getPluginManager()->registerEvents($this, $this);
 		$this->saveDefaultConfig();
 
-		if(!is_dir($this->getResourcePackFolder())){
-			mkdir($this->getResourcePackFolder());
+		if(!is_dir($this->getResourcePackFolder()) && !mkdir($concurrentDirectory = $this->getResourcePackFolder()) && !is_dir($concurrentDirectory)){
+			throw new \RuntimeException(sprintf('Directory "%s" was not created', $concurrentDirectory));
 		}
 
 		$this->getServer()->getCommandMap()->register("customitemloader", new ResourcePackCreateCommand());
