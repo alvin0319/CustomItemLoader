@@ -25,11 +25,14 @@ use pocketmine\event\player\PlayerInteractEvent;
 use pocketmine\event\player\PlayerJoinEvent;
 use pocketmine\event\player\PlayerQuitEvent;
 use pocketmine\event\server\DataPacketReceiveEvent;
+use pocketmine\event\server\DataPacketSendEvent;
 use pocketmine\item\Item;
 use pocketmine\level\Position;
 use pocketmine\math\Vector3;
 use pocketmine\network\mcpe\protocol\LevelEventPacket;
 use pocketmine\network\mcpe\protocol\PlayerActionPacket;
+use pocketmine\network\mcpe\protocol\StartGamePacket;
+use pocketmine\network\mcpe\protocol\types\Experiments;
 use pocketmine\Player;
 use pocketmine\scheduler\ClosureTask;
 use pocketmine\scheduler\TaskHandler;
@@ -116,6 +119,16 @@ final class EventListener implements Listener{
 			if($handled){
 				$event->setCancelled();
 			}
+		}
+	}
+
+	public function onDataPacketSend(DataPacketSendEvent $event) : void{
+		$packet = $event->getPacket();
+		if($packet instanceof StartGamePacket){
+			$packet->experiments = new Experiments([
+				"holiday_creator_features" => true
+			], true);
+			echo "The fuck?\n";
 		}
 	}
 

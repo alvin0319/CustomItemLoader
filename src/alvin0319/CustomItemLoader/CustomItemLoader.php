@@ -66,11 +66,4 @@ class CustomItemLoader extends PluginBase{
 	public function getResourcePackFolder() : string{
 		return $this->getDataFolder() . "resource_packs/";
 	}
-
-	public function onDataPacketSend(DataPacketSendEvent $event) : void{
-		$packet = $event->getPacket();
-		if($packet instanceof StartGamePacket){
-			$packet->experiments = new Experiments([], true);
-		}
-	}
 }
