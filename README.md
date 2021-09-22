@@ -3,8 +3,12 @@ Plugin for PocketMine-MP that make your own custom item with full feature!
 
 <a href="https://poggit.pmmp.io/p/CustomItemLoader"><img src="https://poggit.pmmp.io/shield.state/CustomItemLoader"></a><a href="https://poggit.pmmp.io/p/CustomItemLoader"><img src="https://poggit.pmmp.io/shield.dl/CustomItemLoader"></a>
 
-## Reference
-All of these components were came from MCPE addon document and [wiki.vg](https://wiki.vg/Bedrock_Protocol)
+# CustomItemLoader for PM3 is now on feature-freeze
+Since PM4 is in the BETA and I use PM4 as my base, I will maintain the PM4 branch as default.
+
+PM3 version will get only protocol update until PM4 releases.
+
+If PM4 fully released, PM3 branch will be deleted.
 
 ## How to use
 
@@ -26,4 +30,4 @@ You can see example on [example folder](./example)
 * A. Make sure to register item name on en_US.lang or other language file
 
 * Q. I set its config correctly or I used example but item texture does not appear
-* A. If you are using this plugin behind proxy such as WDPE, you should run this plugin also on lobby server [L#50~54](https://github.com/alvin0319/CustomItemLoader/blob/master/src/alvin0319/CustomItemLoader/CustomItemLoader.php#L50)
+* A. If you are using this plugin behind proxy such as WDPE, you should run this plugin also on lobby server [L#53~57](https://github.com/alvin0319/CustomItemLoader/blob/master/src/alvin0319/CustomItemLoader/CustomItemLoader.php#L53#L57)

@@ -1,13 +1,13 @@
 name: CustomItemLoader
 author: alvin0319
 main: alvin0319\CustomItemLoader\CustomItemLoader
-version: 2.1.0
+version: 2.1.1
 api: 3.0.0
 
 extensions:
   Core: ">=7.4"
 
-mcpe-protocol: 448
+mcpe-protocol: 465
 
 permissions:
   customitemloader.command.rsc:

@@ -129,7 +129,8 @@ final class CustomItemProperties{
 		$nbt = new CompoundTag("", [
 			new CompoundTag("components", [
 				new CompoundTag("minecraft:icon", [
-					new StringTag("texture", $data["texture"])
+					new StringTag("texture", $data["texture"]),
+					new StringTag("legacy_id", $data["namespace"])
 				]),
 				new CompoundTag("item_properties", [
 					new IntTag("use_duration", 32),
