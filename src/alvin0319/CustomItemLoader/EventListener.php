@@ -128,7 +128,6 @@ final class EventListener implements Listener{
 			$packet->experiments = new Experiments([
 				"holiday_creator_features" => true
 			], true);
-			echo "The fuck?\n";
 		}
 	}
 
