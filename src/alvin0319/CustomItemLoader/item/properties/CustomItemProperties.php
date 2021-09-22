@@ -134,11 +134,11 @@ final class CustomItemProperties{
 
 		$nbt = new CompoundTag("", [
 			new CompoundTag("components", [
-				new CompoundTag("minecraft:icon", [
-					new StringTag("texture", $data["texture"]),
-					new StringTag("legacy_id", $data["namespace"])
-				]),
 				new CompoundTag("item_properties", [
+					new CompoundTag("minecraft:icon", [
+						new StringTag("texture", $data["texture"]),
+						new StringTag("legacy_id", $data["namespace"])
+					]),
 					new IntTag("use_duration", 32),
 					new IntTag("use_animation", ($food === 1 ? 1 : 0)), // 2 is potion, but not now
 					new ByteTag("allow_off_hand", $allow_off_hand),
