@@ -115,6 +115,12 @@ final class CustomItemProperties{
 
 		$armor = isset($data["armor"]) ? $data["armor"] : false;
 		$defence_points = $data["defence_points"] ?? 0;
+		$armor_slot = $data["armor_slot"] ?? "slot.weapon.mainhand";
+		$armor_class = $data["armor_class"] ?? "diamond";
+
+		static $accepted_armor_values = ["gold", "none", "leather", "chain", "iron", "diamond", "elytra", "turtle", "netherite"];
+
+		static $accepted_armor_position_values = ["slot.armor.legs", "none", "slot.weapon.mainhand", "slot.weapon.offhand", "slot.armor.head", "slot.armor.chest", "slot.armor.feet", "slot.hotbar", "slot.inventory", "slot.enderchest", "slot.saddle", "slot.armor", "slot.chest"];
 
 		$isBlock = $data["isBlock"] ?? false;
 
@@ -183,15 +189,19 @@ final class CustomItemProperties{
 			if(!isset($data["armor_position"])){
 				throw new AssumptionFailedError("Armor should have its position (head, chest, legs, feet)");
 			}
-			if(!in_array($data["armor_position"], ["head", "chest", "legs", "feet"])){
-				throw new AssumptionFailedError("Position is invalid");
+			if(!in_array($armor_slot, $accepted_armor_position_values, true)){
+				throw new AssumptionFailedError("Armor position value is invalid");
+			}
+			if(!in_array($armor_class, $accepted_armor_values, true)){
+				throw new AssumptionFailedError("Armor class is invalid");
 			}
 
 			$nbt->setTag(new CompoundTag("minecraft:armor", [
-				new CompoundTag("minecraft:wearable", [
-					new StringTag("slot", "slot.armor.chest"),
-					new ShortTag("dispensable", 1)
-				])
+				new StringTag("texture_type", $armor_class),
+				new IntTag("protection", 0)
+			]));
+			$nbt->setTag(new CompoundTag("minecraft:wearable", [
+				new StringTag("slot", $armor)
 			]));
 		}
 
