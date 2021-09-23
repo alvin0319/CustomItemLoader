@@ -162,6 +162,47 @@ Types:
 `5`: Diamond
 
 
+## Armor item
+To make item as armor, you have to enable `armor`
+```yaml
+armor: true
+```
+Armor also can have durability, as I mentioned on [Tool](#Tool item) and [Durable](#Durable item)
+
+On armor, you have to define these properties.
+
+```yaml
+armor_slot: chest
+armor_class: diamond
+```
+
+Currently, I don't know what `armor_class` does. According to [bedrock.dev](https://bedrock.dev) document, It says it decides the texture type of armor.
+> Texture Type to apply for the armor
+
+But I can't see what's difference.
+
+Allowed values for `armor_class`:
+
+- gold
+- none
+- leather
+- chain
+- iron
+- diamond
+- elytra
+- turtle
+- netherite
+
+The default value is `diamond`.
+
+`armor_slot` is the slot of armor, which is applied where armor can be equipped.
+
+Allowed values for `armor_slot`:
+- helmet
+- chest
+- leggings
+- boots
+
 # Templates
 You can use this template to make your custom item
 
@@ -222,4 +263,17 @@ items:
     tool_type: 4 # This will make this tool as pickaxe, replace it as you want
     tool_tier: 5 # This will make this tool's tier as Diamond, replace it as you want
     tool: true
+```
+
+## Armor
+```yaml
+items:
+  <your_item_name>:
+    id: <id>
+    meta: <meta>
+    namespace: <namespace>
+    armor: true
+    armor_slot: chest
+    defence_points: 5 # Defence points of armor
+    armor_class: diamond # Default is diamond, feel free to send feedback to me
 ```
