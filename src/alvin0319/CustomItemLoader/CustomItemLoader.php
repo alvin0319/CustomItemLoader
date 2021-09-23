@@ -20,6 +20,7 @@ namespace alvin0319\CustomItemLoader;
 
 use alvin0319\CustomItemLoader\command\CustomItemLoaderCommand;
 use alvin0319\CustomItemLoader\command\ResourcePackCreateCommand;
+use JackMD\UpdateNotifier\UpdateNotifier;
 use pocketmine\event\Listener;
 use pocketmine\event\player\PlayerJoinEvent;
 use pocketmine\event\server\DataPacketSendEvent;
@@ -27,6 +28,7 @@ use pocketmine\network\mcpe\protocol\StartGamePacket;
 use pocketmine\network\mcpe\protocol\types\Experiments;
 use pocketmine\plugin\PluginBase;
 use pocketmine\utils\SingletonTrait;
+use function class_exists;
 use function is_dir;
 use function mkdir;
 
@@ -42,6 +44,10 @@ class CustomItemLoader extends PluginBase{
 
 		if(!is_dir($this->getResourcePackFolder())){
 			mkdir($this->getResourcePackFolder());
+		}
+
+		if(class_exists(UpdateNotifier::class)){
+			UpdateNotifier::checkUpdate($this->getDescription()->getName(), $this->getDescription()->getVersion());
 		}
 
 		$this->getServer()->getCommandMap()->registerAll("customitemloader", [

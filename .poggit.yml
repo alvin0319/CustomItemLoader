@@ -6,4 +6,7 @@ branches:
 projects:
   CustomItemLoader:
     path: ""
+    libs:
+      - src: ifera-mc/UpdateNotifier/UpdateNotifier
+        version: ^2.1.0
 ...
