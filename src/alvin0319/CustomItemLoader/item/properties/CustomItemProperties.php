@@ -30,9 +30,7 @@ use pocketmine\nbt\tag\ShortTag;
 use pocketmine\nbt\tag\StringTag;
 use pocketmine\utils\AssumptionFailedError;
 use ReflectionClass;
-use function implode;
 use function in_array;
-use function var_dump;
 
 final class CustomItemProperties{
 	/** @var string */
@@ -230,9 +228,6 @@ final class CustomItemProperties{
 			]));
 			$this->durable = true;
 			$this->max_durability = $data["max_durability"] ?? 64;
-			var_dump($armor_class);
-			var_dump($armor_slot);
-			var_dump($armor_slot_int);
 		}
 
 		$runtimeId = $id + ($id > 0 ? 5000 : -5000);
