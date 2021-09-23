@@ -79,7 +79,6 @@ final class EventListener implements Listener{
 
 				$ev->call();
 				if($ev->isCancelled()){
-					$handled = true;
 					$player->getInventory()->sendHeldItem($player);
 					return;
 				}
@@ -91,7 +90,6 @@ final class EventListener implements Listener{
 					}
 					$tile->setItem();
 					$tile->setItemRotation(0);
-					$handled = true;
 					return;
 				}
 				$block = $target->getSide($packet->face);
