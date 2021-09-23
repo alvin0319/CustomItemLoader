@@ -19,6 +19,7 @@ declare(strict_types=1);
 namespace alvin0319\CustomItemLoader\item\properties;
 
 use pocketmine\block\BlockToolType;
+use pocketmine\inventory\ArmorInventory;
 use pocketmine\item\Item;
 use pocketmine\item\ItemFactory;
 use pocketmine\nbt\tag\ByteTag;
@@ -27,7 +28,9 @@ use pocketmine\nbt\tag\FloatTag;
 use pocketmine\nbt\tag\IntTag;
 use pocketmine\nbt\tag\ShortTag;
 use pocketmine\nbt\tag\StringTag;
+use pocketmine\utils\AssumptionFailedError;
 use ReflectionClass;
+use function in_array;
 
 final class CustomItemProperties{
 	/** @var string */
@@ -113,6 +116,21 @@ final class CustomItemProperties{
 
 		$armor = isset($data["armor"]) ? $data["armor"] : false;
 		$defence_points = $data["defence_points"] ?? 0;
+		$armor_slot = $data["armor_slot"] ?? "helmet";
+		$armor_class = $data["armor_class"] ?? "diamond";
+
+		$armor_slot_int = match($armor_slot){
+			"helmet" => ArmorInventory::SLOT_HEAD,
+			"chest" => ArmorInventory::SLOT_CHEST,
+			"leggings" => ArmorInventory::SLOT_LEGS,
+			"boots" => ArmorInventory::SLOT_FEET,
+			default => throw new AssumptionFailedError("Unknown armor slot $armor_slot given.")
+		};
+		$armor_slot_int += 2; // wtf mojang
+
+		static $accepted_armor_values = ["gold", "none", "leather", "chain", "iron", "diamond", "elytra", "turtle", "netherite"];
+
+		//static $accepted_armor_position_values = ["slot.armor.legs", "none", "slot.weapon.mainhand", "slot.weapon.offhand", "slot.armor.head", "slot.armor.chest", "slot.armor.feet", "slot.hotbar", "slot.inventory", "slot.enderchest", "slot.saddle", "slot.armor", "slot.chest"];
 
 		$isBlock = $data["isBlock"] ?? false;
 
@@ -176,6 +194,42 @@ final class CustomItemProperties{
 			$this->saturation = $saturation;
 			$this->residue = $residue;
 		}
+
+		if($armor){
+			if(!in_array($armor_class, $accepted_armor_values, true)){
+				throw new AssumptionFailedError("Armor class is invalid");
+			}
+
+			$nbt->getCompoundTag("components")?->setTag(new CompoundTag("minecraft:armor", [
+				new StringTag("texture_type", $armor_class),
+				new IntTag("protection", 0)
+			]));
+			$nbt->getCompoundTag("components")?->setTag(new CompoundTag("minecraft:wearable", [
+				new IntTag("slot", $armor_slot_int),
+				new ByteTag("dispensable", 1)
+			]));
+			/*
+			// TODO: find out what does this do
+			$nbt->getCompoundTag("components")?->getCompoundTag("item_properties")
+				?->setString("enchantable_slot", match($armor_slot){
+					"helmet" => "armor_helmet",
+					"chest" => "armor_torso",
+					"leggings" => "armor_legs",
+					"boots" => "armor_feet",
+					default => throw new AssumptionFailedError("Unknown armor type $armor_slot")
+				});
+
+			$nbt->getCompoundTag("components")?->getCompoundTag("item_properties")
+				?->setString("enchantable_value", "10");
+			*/
+			$nbt->getCompoundTag("components")?->setTag(new CompoundTag("minecraft:durability", [
+				new ShortTag("damage_change", 1),
+				new ShortTag("max_durable", $data["max_durability"] ?? 64)
+			]));
+			$this->durable = true;
+			$this->max_durability = $data["max_durability"] ?? 64;
+		}
+
 		$runtimeId = $id + ($id > 0 ? 5000 : -5000);
 
 		$this->id = $id;
