@@ -119,6 +119,8 @@ final class CustomItemProperties{
 		$armor_slot = $data["armor_slot"] ?? "helmet";
 		$armor_class = $data["armor_class"] ?? "diamond";
 
+		$foil = (int) ($data["foil"] ?? 0);
+
 		$armor_slot_int = match($armor_slot){
 			"helmet" => ArmorInventory::SLOT_HEAD,
 			"chest" => ArmorInventory::SLOT_CHEST,
@@ -158,6 +160,7 @@ final class CustomItemProperties{
 					new IntTag("max_stack_size", $max_stack_size),
 					new FloatTag("mining_speed", $mining_speed),
 					new ByteTag("animates_in_toolbar", 1),
+					new ByteTag("foil", $foil)
 				])
 			]),
 			new ShortTag("minecraft:identifier", $runtimeId),

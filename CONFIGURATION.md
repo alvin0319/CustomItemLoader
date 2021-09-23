@@ -49,17 +49,6 @@ You can enable it by adding
 can_destroy_in_creative: true
 ```
 
-When add this item in creative inventory, This will not appear if you don't set `creative_category`
-
-You can enable it by adding
-
-```yaml
-creative_category: 1
-```
-`1`: Structure
-`2`: Nature
-`3`: Item
-
 To make item like sword, You have to enable `hand_equipped`
 
 ```yaml
