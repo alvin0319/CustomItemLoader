@@ -1,11 +1,11 @@
 name: CustomItemLoader
 author: alvin0319
 main: alvin0319\CustomItemLoader\CustomItemLoader
-version: 2.1.2
+version: 2.2.0
 api: 3.0.0
 
 extensions:
-  Core: ">=7.4"
+  Core: ">=8.0"
 
 mcpe-protocol: 465
 
