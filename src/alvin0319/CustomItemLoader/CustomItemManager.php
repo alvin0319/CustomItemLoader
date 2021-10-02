@@ -142,7 +142,11 @@ final class CustomItemManager{
 			ItemTypeDictionary::reset();
 		}
 		foreach($data as $name => $itemData){
-			$this->registerItem(self::getItem($name, $itemData));
+			try{
+				$this->registerItem(self::getItem($name, $itemData));
+			}catch(AssumptionFailedError $e){
+				CustomItemLoader::getInstance()->getLogger()->critical("Failed to register $name: {$e->getMessage()}");
+			}
 		}
 	}
 
