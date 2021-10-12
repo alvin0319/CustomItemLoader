@@ -88,6 +88,8 @@ final class CustomItemProperties{
 
 	protected bool $add_creative_inventory = false;
 
+	protected int $attack_points = 0;
+
 	public function __construct(string $name, array $data){
 		$this->name = $name;
 		$this->parseData($data);
@@ -139,6 +141,8 @@ final class CustomItemProperties{
 		$blockId = $isBlock ? $data["blockId"] : 0;
 
 		$add_creative_inventory = ($data["add_creative_inventory"] ?? false);
+
+		$attack_points = (int) ($data["attack_points"] ?? 1);
 
 		$tool = $data["tool"] ?? false;
 		$tool_type = $data["tool_type"] ?? BlockToolType::TYPE_NONE;
@@ -258,6 +262,8 @@ final class CustomItemProperties{
 		$this->toolType = $tool_type;
 		$this->toolTier = $tool_tier;
 
+		$this->attack_points = $attack_points;
+
 		$this->nbt = $nbt;
 	}
 
@@ -363,6 +369,10 @@ final class CustomItemProperties{
 
 	public function getAddCreativeInventory() : bool{
 		return $this->add_creative_inventory;
+	}
+
+	public function getAttackPoints() : int{
+		return $this->attack_points;
 	}
 
 	public function getNbt() : CompoundTag{

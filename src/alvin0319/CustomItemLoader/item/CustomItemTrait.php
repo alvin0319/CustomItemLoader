@@ -38,4 +38,8 @@ trait CustomItemTrait{
 	public function getProperties() : CustomItemProperties{
 		return $this->properties;
 	}
+
+	public function getAttackPoints() : int{
+		return $this->properties->getAttackPoints();
+	}
 }
