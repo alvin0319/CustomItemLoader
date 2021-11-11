@@ -74,7 +74,7 @@ final class CustomItemProperties{
 	/** @var bool */
 	protected bool $tool = false;
 	/** @var int */
-	protected int $toolType = BlockToolType::TYPE_NONE;
+	protected int $toolType = BlockToolType::NONE;
 	/** @var int */
 	protected int $toolTier = 0;
 
