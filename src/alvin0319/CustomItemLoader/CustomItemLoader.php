@@ -64,7 +64,7 @@ class CustomItemLoader extends PluginBase implements Listener{
 		$packets = $event->getPackets();
 		foreach($packets as $packet){
 			if($packet instanceof StartGamePacket){
-				$packet->experiments = new Experiments([
+				$packet->levelSettings->experiments = new Experiments([
 					"data_driven_items" => true
 				], true);
 			}elseif($packet instanceof ResourcePackStackPacket){

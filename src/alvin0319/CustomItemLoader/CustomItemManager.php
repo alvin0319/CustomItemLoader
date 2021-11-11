@@ -32,6 +32,7 @@ use pocketmine\network\mcpe\convert\GlobalItemTypeDictionary;
 use pocketmine\network\mcpe\convert\ItemTranslator;
 use pocketmine\network\mcpe\protocol\ItemComponentPacket;
 use pocketmine\network\mcpe\protocol\serializer\ItemTypeDictionary;
+use pocketmine\network\mcpe\protocol\types\CacheableNbt;
 use pocketmine\network\mcpe\protocol\types\ItemComponentPacketEntry;
 use pocketmine\network\mcpe\protocol\types\ItemTypeEntry;
 use pocketmine\utils\AssumptionFailedError;
@@ -115,7 +116,7 @@ final class CustomItemManager{
 
 			$this->itemTypeEntries[] = new ItemTypeEntry($item->getProperties()->getNamespace(), $runtimeId, true);
 
-			$this->packetEntries[] = new ItemComponentPacketEntry($item->getProperties()->getNamespace(), $item->getProperties()->getNbt());
+			$this->packetEntries[] = new ItemComponentPacketEntry($item->getProperties()->getNamespace(), new CacheableNbt($item->getProperties()->getNbt()));
 
 			$this->registered[] = $item;
 
