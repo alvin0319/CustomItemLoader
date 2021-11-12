@@ -26,9 +26,9 @@ use alvin0319\CustomItemLoader\item\CustomItemBlock;
 use alvin0319\CustomItemLoader\item\CustomItemTrait;
 use alvin0319\CustomItemLoader\item\CustomToolItem;
 use alvin0319\CustomItemLoader\item\properties\CustomItemProperties;
-use pocketmine\data\bedrock\LegacyItemIdToStringIdMap;
 use pocketmine\item\Item;
 use pocketmine\item\ItemFactory;
+use pocketmine\item\StringToItemParser;
 use pocketmine\network\mcpe\convert\GlobalItemTypeDictionary;
 use pocketmine\network\mcpe\convert\ItemTranslator;
 use pocketmine\network\mcpe\protocol\ItemComponentPacket;
@@ -123,7 +123,7 @@ final class CustomItemManager{
 
 			$new = clone $item;
 
-			LegacyItemIdToStringIdMap::getInstance()->register($item->getProperties()->getName(), fn() => $new);
+			StringToItemParser::getInstance()->register($item->getProperties()->getName(), fn() => $new);
 
 			ItemFactory::getInstance()->register($item, true);
 		}catch(\Throwable $e){
