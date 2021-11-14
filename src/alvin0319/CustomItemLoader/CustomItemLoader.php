@@ -57,7 +57,8 @@ class CustomItemLoader extends PluginBase implements Listener{
 
 	public function onPlayerJoin(PlayerJoinEvent $event) : void{
 		$player = $event->getPlayer();
-		$player->getNetworkSession()->sendDataPacket(CustomItemManager::getInstance()->getPacket());
+        $packet = CustomItemManager::getInstance()->getPacket();
+		$player->getNetworkSession()->sendDataPacket($packet);
 	}
 
 	public function onDataPacketSend(DataPacketSendEvent $event) : void{
