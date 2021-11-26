@@ -37,8 +37,8 @@ class CustomItemLoader extends PluginBase{
 	public function onEnable() : void{
 		$this->saveDefaultConfig();
 
-		if(!is_dir($this->getResourcePackFolder())){
-			mkdir($this->getResourcePackFolder());
+		if(!is_dir($this->getResourcePackFolder()) && !mkdir($concurrentDirectory = $this->getResourcePackFolder()) && !is_dir($concurrentDirectory)){
+			throw new \RuntimeException(sprintf('Directory "%s" was not created', $concurrentDirectory));
 		}
 
 		if(class_exists(UpdateNotifier::class)){

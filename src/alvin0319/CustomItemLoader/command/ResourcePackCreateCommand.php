@@ -73,7 +73,9 @@ class ResourcePackCreateCommand extends PluginCommand{
 					$sender->sendMessage("\"$pack_name\" is already in use");
 					return false;
 				}
-				mkdir($path);
+				if(!mkdir($path) && !is_dir($path)){
+					throw new \RuntimeException(sprintf('Directory "%s" was not created', $path));
+				}
 
 				$protocolInfo = explode(".", ProtocolInfo::MINECRAFT_VERSION_NETWORK);
 
@@ -95,16 +97,22 @@ class ResourcePackCreateCommand extends PluginCommand{
 						]
 					]
 				];
-				file_put_contents($path . "manifest.json", json_encode($manifests, JSON_PRETTY_PRINT | JSON_BIGINT_AS_STRING));
-				mkdir($path . "textures/");
-				mkdir($path . "textures/items/");
-				mkdir($path . "texts/");
+				file_put_contents($path . "manifest.json", json_encode($manifests, JSON_THROW_ON_ERROR | JSON_PRETTY_PRINT | JSON_BIGINT_AS_STRING));
+				if(!mkdir($concurrentDirectory = $path . "textures/") && !is_dir($concurrentDirectory)){
+					throw new \RuntimeException(sprintf('Directory "%s" was not created', $concurrentDirectory));
+				}
+				if(!mkdir($concurrentDirectory = $path . "textures/items/") && !is_dir($concurrentDirectory)){
+					throw new \RuntimeException(sprintf('Directory "%s" was not created', $concurrentDirectory));
+				}
+				if(!mkdir($concurrentDirectory = $path . "texts/") && !is_dir($concurrentDirectory)){
+					throw new \RuntimeException(sprintf('Directory "%s" was not created', $concurrentDirectory));
+				}
 
 				file_put_contents($path . "textures/item_texture.json", json_encode([
 					"resource_pack_name" => "vanilla",
 					"texture_name" => "atlas.items",
 					"texture_data" => []
-				], JSON_PRETTY_PRINT | JSON_BIGINT_AS_STRING));
+				], JSON_THROW_ON_ERROR | JSON_PRETTY_PRINT | JSON_BIGINT_AS_STRING));
 				file_put_contents($path . "texts/en_US.lang", "");
 				$sender->sendMessage("Resource pack creation was successful!");
 				break;
@@ -126,9 +134,9 @@ class ResourcePackCreateCommand extends PluginCommand{
 				file_put_contents($path, $this->combineLang($parsed));
 
 				$file = file_get_contents($path = CustomItemLoader::getInstance()->getResourcePackFolder() . $pack_name . "/textures/item_texture.json");
-				$parsed = json_decode($file, true);
+				$parsed = json_decode($file, true, 512, JSON_THROW_ON_ERROR);
 				$parsed["texture_data"][$name] = ["textures" => "textures/items/{$name}"];
-				file_put_contents($path, json_encode($parsed, JSON_PRETTY_PRINT | JSON_BIGINT_AS_STRING));
+				file_put_contents($path, json_encode($parsed, JSON_THROW_ON_ERROR | JSON_PRETTY_PRINT | JSON_BIGINT_AS_STRING));
 				$sender->sendMessage("Item creation successful! make sure to add item to config.yml and item png file!");
 				break;
 			case "makepack":
@@ -179,11 +187,11 @@ class ResourcePackCreateCommand extends PluginCommand{
 	public function recursiveZipDir(ZipArchive $zip, string $dir, string $tempDir = "") : void{
 		$dir = Utils::cleanPath($dir);
 		$tempDir = Utils::cleanPath($tempDir);
-		if(substr($dir, -1) !== "/"){
+		if(!str_ends_with($dir, "/")){
 			$dir .= "/";
 		}
 
-		if(trim($tempDir) !== "" && substr($tempDir, -1) !== "/"){
+		if(trim($tempDir) !== "" && !str_ends_with($tempDir, "/")){
 			$tempDir .= "/";
 		}
 
