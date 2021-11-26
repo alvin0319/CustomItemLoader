@@ -28,7 +28,6 @@ use pocketmine\nbt\tag\FloatTag;
 use pocketmine\nbt\tag\IntTag;
 use pocketmine\nbt\tag\ShortTag;
 use pocketmine\nbt\tag\StringTag;
-use pocketmine\utils\AssumptionFailedError;
 use ReflectionClass;
 use function in_array;
 
@@ -128,7 +127,7 @@ final class CustomItemProperties{
 			"chest" => ArmorInventory::SLOT_CHEST,
 			"leggings" => ArmorInventory::SLOT_LEGS,
 			"boots" => ArmorInventory::SLOT_FEET,
-			default => throw new AssumptionFailedError("Unknown armor slot $armor_slot given.")
+			default => throw new \InvalidArgumentException("Unknown armor slot $armor_slot given.")
 		};
 		$armor_slot_int += 2; // wtf mojang
 
@@ -204,7 +203,7 @@ final class CustomItemProperties{
 
 		if($armor){
 			if(!in_array($armor_class, $accepted_armor_values, true)){
-				throw new AssumptionFailedError("Armor class is invalid");
+				throw new \InvalidArgumentException("Armor class is invalid");
 			}
 
 			$nbt->getCompoundTag("components")?->setTag(new CompoundTag("minecraft:armor", [

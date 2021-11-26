@@ -33,7 +33,6 @@ use pocketmine\network\mcpe\convert\ItemTypeDictionary;
 use pocketmine\network\mcpe\protocol\ItemComponentPacket;
 use pocketmine\network\mcpe\protocol\types\ItemComponentPacketEntry;
 use pocketmine\network\mcpe\protocol\types\ItemTypeEntry;
-use pocketmine\utils\AssumptionFailedError;
 use pocketmine\utils\SingletonTrait;
 use ReflectionClass;
 use ReflectionProperty;
@@ -120,7 +119,7 @@ final class CustomItemManager{
 
 			ItemFactory::registerItem($item, true);
 		}catch(\Throwable $e){
-			throw new AssumptionFailedError("Failed to register item: " . $e->getMessage(), $e->getLine(), $e);
+			throw new \InvalidStateException("Failed to register item: " . $e->getMessage(), $e->getLine(), $e);
 		}
 		$this->refresh();
 	}
@@ -144,7 +143,7 @@ final class CustomItemManager{
 		foreach($data as $name => $itemData){
 			try{
 				$this->registerItem(self::getItem($name, $itemData));
-			}catch(AssumptionFailedError $e){
+			}catch(\InvalidStateException $e){
 				CustomItemLoader::getInstance()->getLogger()->critical("Failed to register $name: {$e->getMessage()}");
 			}
 		}
