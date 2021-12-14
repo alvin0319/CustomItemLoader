@@ -128,7 +128,7 @@ final class CustomItemManager{
 
 			ItemFactory::getInstance()->register($item, true);
 		}catch(Throwable $e){
-			throw new InvalidStateException("Failed to register item: " . $e->getMessage(), $e->getLine(), $e);
+			throw new \InvalidArgumentException("Failed to register item: " . $e->getMessage(), $e->getLine(), $e);
 		}
 		$this->refresh();
 	}
