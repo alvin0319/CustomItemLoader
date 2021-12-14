@@ -26,6 +26,7 @@ use alvin0319\CustomItemLoader\item\CustomItemBlock;
 use alvin0319\CustomItemLoader\item\CustomItemTrait;
 use alvin0319\CustomItemLoader\item\CustomToolItem;
 use alvin0319\CustomItemLoader\item\properties\CustomItemProperties;
+use InvalidStateException;
 use pocketmine\item\Item;
 use pocketmine\item\ItemFactory;
 use pocketmine\item\StringToItemParser;
@@ -36,10 +37,10 @@ use pocketmine\network\mcpe\protocol\serializer\ItemTypeDictionary;
 use pocketmine\network\mcpe\protocol\types\CacheableNbt;
 use pocketmine\network\mcpe\protocol\types\ItemComponentPacketEntry;
 use pocketmine\network\mcpe\protocol\types\ItemTypeEntry;
-use pocketmine\utils\AssumptionFailedError;
 use pocketmine\utils\SingletonTrait;
 use ReflectionClass;
 use ReflectionProperty;
+use Throwable;
 
 final class CustomItemManager{
 	use SingletonTrait {
@@ -126,8 +127,8 @@ final class CustomItemManager{
 			StringToItemParser::getInstance()->register($item->getProperties()->getName(), fn() => $new);
 
 			ItemFactory::getInstance()->register($item, true);
-		}catch(\Throwable $e){
-			throw new AssumptionFailedError("Failed to register item: " . $e->getMessage(), $e->getLine(), $e);
+		}catch(Throwable $e){
+			throw new InvalidStateException("Failed to register item: " . $e->getMessage(), $e->getLine(), $e);
 		}
 		$this->refresh();
 	}

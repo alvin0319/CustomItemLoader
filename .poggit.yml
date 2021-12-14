@@ -2,7 +2,12 @@
 build-by-default: true
 branches:
   - master
+  - pm4
 projects:
   CustomItemLoader:
     path: ""
+    libs:
+      - src: ifera-mc/UpdateNotifier/UpdateNotifier
+        version: ^2.2.0
+        branch: API-4.0.0
 ...

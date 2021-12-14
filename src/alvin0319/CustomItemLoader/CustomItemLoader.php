@@ -18,8 +18,7 @@ declare(strict_types=1);
 
 namespace alvin0319\CustomItemLoader;
 
-use alvin0319\CustomItemLoader\command\ResourcePackCreateCommand;
-use pocketmine\event\Listener;
+use JackMD\UpdateNotifier\UpdateNotifier;
 use pocketmine\event\player\PlayerJoinEvent;
 use pocketmine\event\server\DataPacketSendEvent;
 use pocketmine\network\mcpe\protocol\ResourcePackStackPacket;
@@ -27,10 +26,13 @@ use pocketmine\network\mcpe\protocol\StartGamePacket;
 use pocketmine\network\mcpe\protocol\types\Experiments;
 use pocketmine\plugin\PluginBase;
 use pocketmine\utils\SingletonTrait;
+use RuntimeException;
+use Webmozart\PathUtil\Path;
+use function class_exists;
 use function is_dir;
 use function mkdir;
 
-class CustomItemLoader extends PluginBase implements Listener{
+class CustomItemLoader extends PluginBase{
 	use SingletonTrait;
 
 	public function onLoad() : void{
@@ -38,21 +40,33 @@ class CustomItemLoader extends PluginBase implements Listener{
 	}
 
 	public function onEnable() : void{
-		$this->getServer()->getPluginManager()->registerEvents($this, $this);
 		$this->saveDefaultConfig();
 
 		if(!is_dir($this->getResourcePackFolder()) && !mkdir($concurrentDirectory = $this->getResourcePackFolder()) && !is_dir($concurrentDirectory)){
-			throw new \RuntimeException(sprintf('Directory "%s" was not created', $concurrentDirectory));
+			throw new RuntimeException(sprintf('Directory "%s" was not created', $concurrentDirectory));
 		}
 
-		$this->getServer()->getCommandMap()->register("customitemloader", new ResourcePackCreateCommand());
+		if(class_exists(UpdateNotifier::class)){
+			UpdateNotifier::checkUpdate($this->getDescription()->getName(), $this->getDescription()->getVersion());
+		}
 
 		CustomItemManager::reset();
+		CustomItemManager::getInstance()->registerDefaultItems($this->getConfig()->get("items", []));
+
+		if($this->getServer()->getPort() !== 19132){
+			// TODO: proxy support
+			// maybe behind on the proxy
+			// Proxies such as WDPE will send StartGamePacket only once and won't send again (maybe its logic?)
+			// so if this plugin is behind on proxy and is not lobby server the item texture won't appear
+			// the solution for this is use this plugin also on lobby server so that player can receive modified StartGamePacket
+			$this->getLogger()->notice("Detected this server isn't running on 19132 port. If you are running this server behind proxy, make sure to use this plugin on lobby.");
+		}
+
 		CustomItemManager::getInstance()->registerDefaultItems($this->getConfig()->get("items", []));
 	}
 
 	public function getResourcePackFolder() : string{
-		return $this->getDataFolder() . "resource_packs/";
+		return Path::join($this->getDataFolder(), "resource_packs");
 	}
 
 	public function onPlayerJoin(PlayerJoinEvent $event) : void{

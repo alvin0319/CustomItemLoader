@@ -23,10 +23,13 @@ use pocketmine\command\Command;
 use pocketmine\command\CommandSender;
 use pocketmine\command\utils\InvalidCommandSyntaxException;
 use pocketmine\network\mcpe\protocol\ProtocolInfo;
+use pocketmine\plugin\PluginOwned;
+use pocketmine\plugin\PluginOwnedTrait;
 use pocketmine\utils\Filesystem;
 use Ramsey\Uuid\Uuid;
 use RecursiveDirectoryIterator;
 use RecursiveIteratorIterator;
+use RuntimeException;
 use SplFileInfo;
 use ZipArchive;
 use function array_shift;
@@ -42,13 +45,16 @@ use function mkdir;
 use function substr;
 use function trim;
 
-class ResourcePackCreateCommand extends Command{
+class ResourcePackCreateCommand extends Command implements PluginOwned{
+	use PluginOwnedTrait;
 
 	public function __construct(){
 		parent::__construct("rsc");
 		$this->setDescription("Creates a resource pack");
 		$this->setPermission("customitemloader.command.rsc");
 		$this->setUsage("/rsc [create|additem|makepack]");
+
+		$this->owningPlugin = CustomItemLoader::getInstance();
 	}
 
 	public function execute(CommandSender $sender, string $commandLabel, array $args) : bool{
@@ -73,7 +79,9 @@ class ResourcePackCreateCommand extends Command{
 					$sender->sendMessage("\"$pack_name\" is already in use");
 					return false;
 				}
-				mkdir($path);
+				if(!mkdir($path) && !is_dir($path)){
+					throw new RuntimeException(sprintf('Directory "%s" was not created', $path));
+				}
 
 				$protocolInfo = explode(".", ProtocolInfo::MINECRAFT_VERSION_NETWORK);
 
@@ -95,16 +103,22 @@ class ResourcePackCreateCommand extends Command{
 						]
 					]
 				];
-				file_put_contents($path . "manifest.json", json_encode($manifests, JSON_PRETTY_PRINT | JSON_BIGINT_AS_STRING));
-				mkdir($path . "textures/");
-				mkdir($path . "textures/items/");
-				mkdir($path . "texts/");
+				file_put_contents($path . "manifest.json", json_encode($manifests, JSON_THROW_ON_ERROR | JSON_PRETTY_PRINT | JSON_BIGINT_AS_STRING));
+				if(!mkdir($concurrentDirectory = $path . "textures/") && !is_dir($concurrentDirectory)){
+					throw new RuntimeException(sprintf('Directory "%s" was not created', $concurrentDirectory));
+				}
+				if(!mkdir($concurrentDirectory = $path . "textures/items/") && !is_dir($concurrentDirectory)){
+					throw new RuntimeException(sprintf('Directory "%s" was not created', $concurrentDirectory));
+				}
+				if(!mkdir($concurrentDirectory = $path . "texts/") && !is_dir($concurrentDirectory)){
+					throw new RuntimeException(sprintf('Directory "%s" was not created', $concurrentDirectory));
+				}
 
 				file_put_contents($path . "textures/item_texture.json", json_encode([
 					"resource_pack_name" => "vanilla",
 					"texture_name" => "atlas.items",
 					"texture_data" => []
-				], JSON_PRETTY_PRINT | JSON_BIGINT_AS_STRING));
+				], JSON_THROW_ON_ERROR | JSON_PRETTY_PRINT | JSON_BIGINT_AS_STRING));
 				file_put_contents($path . "texts/en_US.lang", "");
 				$sender->sendMessage("Resource pack creation was successful!");
 				break;
@@ -126,9 +140,9 @@ class ResourcePackCreateCommand extends Command{
 				file_put_contents($path, $this->combineLang($parsed));
 
 				$file = file_get_contents($path = CustomItemLoader::getInstance()->getResourcePackFolder() . $pack_name . "/textures/item_texture.json");
-				$parsed = json_decode($file, true);
+				$parsed = json_decode($file, true, 512, JSON_THROW_ON_ERROR);
 				$parsed["texture_data"][$name] = ["textures" => "textures/items/{$name}"];
-				file_put_contents($path, json_encode($parsed, JSON_PRETTY_PRINT | JSON_BIGINT_AS_STRING));
+				file_put_contents($path, json_encode($parsed, JSON_THROW_ON_ERROR | JSON_PRETTY_PRINT | JSON_BIGINT_AS_STRING));
 				$sender->sendMessage("Item creation successful! make sure to add item to config.yml and item png file!");
 				break;
 			case "makepack":
@@ -183,7 +197,7 @@ class ResourcePackCreateCommand extends Command{
 			$dir .= "/";
 		}
 
-		if(trim($tempDir) !== "" && substr($tempDir, -1) !== "/"){
+		if(trim($tempDir) !== "" && !str_ends_with($tempDir, "/")){
 			$tempDir .= "/";
 		}
 
