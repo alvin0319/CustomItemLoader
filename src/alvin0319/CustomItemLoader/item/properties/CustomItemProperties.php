@@ -20,6 +20,7 @@ namespace alvin0319\CustomItemLoader\item\properties;
 
 use InvalidArgumentException;
 use pocketmine\block\BlockToolType;
+use pocketmine\inventory\ArmorInventory;
 use pocketmine\item\Item;
 use pocketmine\item\ItemFactory;
 use pocketmine\nbt\tag\CompoundTag;
@@ -82,6 +83,10 @@ final class CustomItemProperties{
 
 	protected bool $add_creative_inventory = false;
 
+	protected int $attack_points = 0;
+
+	protected int $foil;
+
 	public function __construct(string $name, array $data){
 		$this->name = $name;
 		$this->parseData($data);
@@ -115,7 +120,7 @@ final class CustomItemProperties{
 
 		$foil = (int) ($data["foil"] ?? 0);
 
-		$armor_slot_int = match ($armor_slot) {
+		$armor_slot_int = match($armor_slot){
 			"helmet" => ArmorInventory::SLOT_HEAD,
 			"chest" => ArmorInventory::SLOT_CHEST,
 			"leggings" => ArmorInventory::SLOT_LEGS,
@@ -137,7 +142,7 @@ final class CustomItemProperties{
 		$attack_points = (int) ($data["attack_points"] ?? 1);
 
 		$tool = $data["tool"] ?? false;
-		$tool_type = $data["tool_type"] ?? BlockToolType::TYPE_NONE;
+		$tool_type = $data["tool_type"] ?? BlockToolType::NONE;
 		$tool_tier = $data["tool_tier"] ?? 0;
 
 		$isBlock = $data["isBlock"] ?? false;
@@ -177,7 +182,7 @@ final class CustomItemProperties{
 			);
 
 		if(isset($data["durable"]) && (bool) ($data["durable"]) !== false){
-			$nbt->getCompoundTag("components")->setTag("minecraft:durability", CompoundTag::create()
+			$nbt->getCompoundTag("components")?->setTag("minecraft:durability", CompoundTag::create()
 				->setShort("damage_change", 1)
 				->setShort("max_durable", $data["max_durability"])
 			);
@@ -185,12 +190,12 @@ final class CustomItemProperties{
 			$this->max_durability = $data["max_durability"];
 		}
 		if($food === 1){
-			$nbt->getCompoundTag("components")->setTag("minecraft:food", CompoundTag::create()
+			$nbt->getCompoundTag("components")?->setTag("minecraft:food", CompoundTag::create()
 				->setByte("can_always_eat", $can_always_eat)
 				->setFloat("nutrition", $nutrition)
 				->setString("saturation_modifier", "low")
 			);
-			$nbt->getCompoundTag("components")->setTag("minecraft:use_duration", CompoundTag::create()
+			$nbt->getCompoundTag("components")?->setTag("minecraft:use_duration", CompoundTag::create()
 				->setInt("value", 1)
 			);
 			$this->food = true;
@@ -204,15 +209,14 @@ final class CustomItemProperties{
 			if(!in_array($armor_class, $accepted_armor_values, true)){
 				throw new InvalidArgumentException("Armor class is invalid");
 			}
-
-			$nbt->getCompoundTag("components")?->setTag(new CompoundTag("minecraft:armor", [
-				new StringTag("texture_type", $armor_class),
-				new IntTag("protection", 0)
-			]));
-			$nbt->getCompoundTag("components")?->setTag(new CompoundTag("minecraft:wearable", [
-				new IntTag("slot", $armor_slot_int),
-				new ByteTag("dispensable", 1)
-			]));
+			$nbt->getCompoundTag("components")?->setTag("minecraft:armor", CompoundTag::create()
+				->setString("texture_type", $armor_class)
+				->setInt("protection", 0)
+			);
+			$nbt->getCompoundTag("components")?->setTag("minecraft:wearable", CompoundTag::create()
+				->setInt("slot", $armor_slot_int)
+				->setByte("dispensable", 1)
+			);
 			/*
 			// TODO: find out what does this do
 			$nbt->getCompoundTag("components")?->getCompoundTag("item_properties")
@@ -227,10 +231,16 @@ final class CustomItemProperties{
 			$nbt->getCompoundTag("components")?->getCompoundTag("item_properties")
 				?->setString("enchantable_value", "10");
 			*/
+			/*
 			$nbt->getCompoundTag("components")?->setTag(new CompoundTag("minecraft:durability", [
 				new ShortTag("damage_change", 1),
 				new ShortTag("max_durable", $data["max_durability"] ?? 64)
 			]));
+			*/
+			$nbt->getCompoundTag("components")?->setTag("minecraft:durability", CompoundTag::create()
+				->setShort("damage_change", 1)
+				->setShort("max_durable", $data["max_durability"] ?? 64)
+			);
 			$this->durable = true;
 			$this->max_durability = $data["max_durability"] ?? 64;
 		}
@@ -261,6 +271,8 @@ final class CustomItemProperties{
 		$this->toolTier = $tool_tier;
 
 		$this->attack_points = $attack_points;
+
+		$this->foil = $foil;
 
 		$this->nbt = $nbt;
 	}
