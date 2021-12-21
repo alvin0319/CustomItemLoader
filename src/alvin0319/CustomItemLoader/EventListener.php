@@ -74,7 +74,7 @@ final class EventListener implements Listener{
 					return;
 				}
 
-				$target = $player->getLevelNonNull()->getBlock($pos);
+				$target = $player->getWorld()->getBlock($pos);
 
 				$ev = new PlayerInteractEvent($player, $player->getInventory()->getItemInHand(), $target, null, $packet->face, PlayerInteractEvent::LEFT_CLICK_BLOCK);
 				if($player->isSpectator() || $player->getLevelNonNull()->checkSpawnProtection($player, $target)){
@@ -83,7 +83,6 @@ final class EventListener implements Listener{
 
 				$ev->call();
 				if($ev->isCancelled()){
-					//$player->getInventory()->sendHeldItem($player);
 					$event->getOrigin()->getInvManager()?->syncSlot($player->getInventory(), $player->getInventory()->getHeldItemIndex());
 					return;
 				}
@@ -100,24 +99,24 @@ final class EventListener implements Listener{
 				}
 				$block = $target->getSide($packet->face);
 				if($block->getId() === BlockLegacyIds::FIRE){
-					$player->getLevelNonNull()->setBlock($block, BlockFactory::getInstance()->get(BlockLegacyIds::AIR));
+					$player->getWorld()->setBlock($block->getPosition(), BlockFactory::getInstance()->get(BlockLegacyIds::AIR, 0));
 					return;
 				}
 
 				if(!$player->isCreative()){
 					$handled = true;
 					//TODO: improve this to take stuff like swimming, ladders, enchanted tools into account, fix wrong tool break time calculations for bad tools (pmmp/PocketMine-MP#211)
-					$breakTime = ceil($target->getBreakTime($player->getInventory()->getItemInHand()) * 20);
+					$breakTime = ceil($target->getBreakInfo()->getBreakTime($player->getInventory()->getItemInHand()) * 20);
 					if($breakTime > 0){
 						if($breakTime > 10){
 							$breakTime -= 10;
 						}
-						$this->scheduleTask(Position::fromObject($pos, $player->getLevelNonNull()), $player->getInventory()->getItemInHand(), $player, $breakTime);
-						$player->getLevelNonNull()->broadcastLevelEvent($pos, LevelEventPacket::EVENT_BLOCK_START_BREAK, (int) (65535 / $breakTime));
+						$this->scheduleTask(Position::fromObject($pos, $player->getWorld()), $player->getInventory()->getItemInHand(), $player, $breakTime);
+						$player->getWorld()->broadcastPacketToViewers($pos, LevelEventPacket::create(LevelEvent::BLOCK_START_BREAK, (int) (65535 / $breakTime), $pos->asVector3()));
 					}
 				}
 			}elseif($packet->action === PlayerAction::ABORT_BREAK){
-				$player->getLevelNonNull()->broadcastLevelEvent($pos, LevelEvent::BLOCK_STOP_BREAK);
+				$player->getWorld()->broadcastPacketToViewers($pos, LevelEventPacket::create(LevelEvent::BLOCK_STOP_BREAK, 0, $pos->asVector3()));
 				$handled = true;
 				$this->stopTask($player, Position::fromObject($pos, $player->getLevelNonNull()));
 			}
@@ -173,7 +172,7 @@ final class EventListener implements Listener{
 		 * Tl;DR: Hacky method
 		 */
 		// Credit: ๖ζ͜͡Apakoh
-		$handler = CustomItemLoader::getInstance()->getScheduler()->scheduleDelayedTask(new ClosureTask(function(int $_) use ($pos, $item, $player) : void{
+		$handler = CustomItemLoader::getInstance()->getScheduler()->scheduleDelayedTask(new ClosureTask(function() use ($pos, $item, $player) : void{
 			$pos->getWorld()->useBreakOn($pos, $item, $player);
 			unset($this->handlers[$player->getName()][$this->blockHash($pos)]);
 		}), (int) floor($breakTime));

@@ -42,7 +42,6 @@ use function is_dir;
 use function json_decode;
 use function json_encode;
 use function mkdir;
-use function substr;
 use function trim;
 
 class ResourcePackCreateCommand extends Command implements PluginOwned{
@@ -193,7 +192,7 @@ class ResourcePackCreateCommand extends Command implements PluginOwned{
 	public function recursiveZipDir(ZipArchive $zip, string $dir, string $tempDir = "") : void{
 		$dir = Filesystem::cleanPath($dir);
 		$tempDir = Filesystem::cleanPath($tempDir);
-		if(substr($dir, -1) !== "/"){
+		if(!str_ends_with($dir, "/")){
 			$dir .= "/";
 		}
 
@@ -204,15 +203,14 @@ class ResourcePackCreateCommand extends Command implements PluginOwned{
 		$files = new RecursiveIteratorIterator(new RecursiveDirectoryIterator($dir), RecursiveIteratorIterator::LEAVES_ONLY | RecursiveDirectoryIterator::SKIP_DOTS);
 		/** @var SplFileInfo $file */
 		foreach($files as $file){
+			if(in_array($file->getFilename(), [".", ".."], true)){
+				continue;
+			}
 			if(!$file->isDir()){
-				if(!in_array($file->getFilename(), [".", ".."])){
-					$zip->addFile($dir . $file->getFilename(), $tempDir . $file->getFilename());
-				}
+				$zip->addFile($dir . $file->getFilename(), $tempDir . $file->getFilename());
 			}else{
-				if(!in_array($file->getFilename(), [".", ".."])){
-					$zip->addEmptyDir($file->getFilename());
-					$this->recursiveZipDir($zip, $dir . $file->getFilename(), $tempDir . $file->getFilename() . "/");
-				}
+				$zip->addEmptyDir($file->getFilename());
+				$this->recursiveZipDir($zip, $dir . $file->getFilename(), $tempDir . $file->getFilename() . "/");
 			}
 		}
 	}
