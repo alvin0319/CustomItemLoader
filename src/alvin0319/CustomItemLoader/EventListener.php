@@ -19,7 +19,8 @@ declare(strict_types=1);
 namespace alvin0319\CustomItemLoader;
 
 use pocketmine\block\BlockFactory;
-use pocketmine\block\BlockIds;
+use pocketmine\block\BlockLegacyIds;
+use pocketmine\block\ItemFrame;
 use pocketmine\event\Listener;
 use pocketmine\event\player\PlayerInteractEvent;
 use pocketmine\event\player\PlayerJoinEvent;
@@ -27,15 +28,19 @@ use pocketmine\event\player\PlayerQuitEvent;
 use pocketmine\event\server\DataPacketReceiveEvent;
 use pocketmine\event\server\DataPacketSendEvent;
 use pocketmine\item\Item;
-use pocketmine\level\Position;
 use pocketmine\math\Vector3;
 use pocketmine\network\mcpe\protocol\LevelEventPacket;
 use pocketmine\network\mcpe\protocol\PlayerActionPacket;
+use pocketmine\network\mcpe\protocol\ResourcePackStackPacket;
 use pocketmine\network\mcpe\protocol\StartGamePacket;
 use pocketmine\network\mcpe\protocol\types\Experiments;
+use pocketmine\network\mcpe\protocol\types\LevelEvent;
+use pocketmine\network\mcpe\protocol\types\PlayerAction;
+use pocketmine\player\Player;
 use pocketmine\scheduler\ClosureTask;
 use pocketmine\scheduler\TaskHandler;
-use pocketmine\tile\ItemFrame;
+use pocketmine\utils\AssumptionFailedError;
+use pocketmine\world\Position;
 use function ceil;
 use function floor;
 use function implode;
@@ -59,8 +64,8 @@ final class EventListener implements Listener{
 		$handled = false;
 		try{
 			$pos = new Vector3($packet->x, $packet->y, $packet->z);
-			$player = $event->getPlayer();
-			if($packet->action === PlayerActionPacket::ACTION_START_BREAK){
+			$player = $event->getOrigin()?->getPlayer() ?: throw new AssumptionFailedError("This packet cannot be received from non-logged in player");
+			if($packet->action === PlayerAction::START_BREAK){
 				$item = $player->getInventory()->getItemInHand();
 				if(!CustomItemManager::getInstance()->isCustomItem($item)){
 					return;
@@ -73,27 +78,29 @@ final class EventListener implements Listener{
 
 				$ev = new PlayerInteractEvent($player, $player->getInventory()->getItemInHand(), $target, null, $packet->face, PlayerInteractEvent::LEFT_CLICK_BLOCK);
 				if($player->isSpectator() || $player->getLevelNonNull()->checkSpawnProtection($player, $target)){
-					$ev->setCancelled();
+					$ev->cancel();
 				}
 
 				$ev->call();
 				if($ev->isCancelled()){
-					$player->getInventory()->sendHeldItem($player);
+					//$player->getInventory()->sendHeldItem($player);
+					$event->getOrigin()->getInvManager()?->syncSlot($player->getInventory(), $player->getInventory()->getHeldItemIndex());
 					return;
 				}
 
-				$tile = $player->getLevelNonNull()->getTile($pos);
-				if($tile instanceof ItemFrame && $tile->hasItem()){
-					if(lcg_value() <= $tile->getItemDropChance()){
-						$player->getLevelNonNull()->dropItem($tile->getBlock(), $tile->getItem());
+				$frameBlock = $player->getWorld()->getBlock($pos);
+				if($frameBlock instanceof ItemFrame && $frameBlock->getFramedItem() !== null){
+					if(lcg_value() <= $frameBlock->getItemDropChance()){
+						$player->getLevelNonNull()->dropItem($frameBlock->getPosition(), $frameBlock->getFramedItem());
 					}
-					$tile->setItem();
-					$tile->setItemRotation(0);
+					$frameBlock->setFramedItem(null);
+					$frameBlock->setItemRotation(0);
+					$player->getWorld()->setBlock($pos, $frameBlock);
 					return;
 				}
 				$block = $target->getSide($packet->face);
-				if($block->getId() === BlockIds::FIRE){
-					$player->getLevelNonNull()->setBlock($block, BlockFactory::get(BlockIds::AIR));
+				if($block->getId() === BlockLegacyIds::FIRE){
+					$player->getLevelNonNull()->setBlock($block, BlockFactory::getInstance()->get(BlockLegacyIds::AIR));
 					return;
 				}
 
@@ -109,30 +116,36 @@ final class EventListener implements Listener{
 						$player->getLevelNonNull()->broadcastLevelEvent($pos, LevelEventPacket::EVENT_BLOCK_START_BREAK, (int) (65535 / $breakTime));
 					}
 				}
-			}elseif($packet->action === PlayerActionPacket::ACTION_ABORT_BREAK){
-				$player->getLevelNonNull()->broadcastLevelEvent($pos, LevelEventPacket::EVENT_BLOCK_STOP_BREAK);
+			}elseif($packet->action === PlayerAction::ABORT_BREAK){
+				$player->getLevelNonNull()->broadcastLevelEvent($pos, LevelEvent::BLOCK_STOP_BREAK);
 				$handled = true;
 				$this->stopTask($player, Position::fromObject($pos, $player->getLevelNonNull()));
 			}
 		}finally{
 			if($handled){
-				$event->setCancelled();
+				$event->cancel();
 			}
 		}
 	}
 
 	public function onDataPacketSend(DataPacketSendEvent $event) : void{
-		$packet = $event->getPacket();
-		if($packet instanceof StartGamePacket){
-			$packet->experiments = new Experiments([
-				"holiday_creator_features" => true
-			], true);
+		$packets = $event->getPackets();
+		foreach($packets as $packet){
+			if($packet instanceof StartGamePacket){
+				$packet->levelSettings->experiments = new Experiments([
+					"data_driven_items" => true
+				], true);
+			}elseif($packet instanceof ResourcePackStackPacket){
+				$packet->experiments = new Experiments([
+					"data_driven_items" => true
+				], true);
+			}
 		}
 	}
 
 	public function onPlayerJoin(PlayerJoinEvent $event) : void{
 		$player = $event->getPlayer();
-		$player->sendDataPacket(CustomItemManager::getInstance()->getPacket());
+		$player->getNetworkSession()->sendDataPacket(CustomItemManager::getInstance()->getPacket());
 	}
 
 	public function onPlayerQuit(PlayerQuitEvent $event) : void{
@@ -161,7 +174,7 @@ final class EventListener implements Listener{
 		 */
 		// Credit: ๖ζ͜͡Apakoh
 		$handler = CustomItemLoader::getInstance()->getScheduler()->scheduleDelayedTask(new ClosureTask(function(int $_) use ($pos, $item, $player) : void{
-			$pos->getLevelNonNull()->useBreakOn($pos, $item, $player);
+			$pos->getWorld()->useBreakOn($pos, $item, $player);
 			unset($this->handlers[$player->getName()][$this->blockHash($pos)]);
 		}), (int) floor($breakTime));
 		if(!isset($this->handlers[$player->getName()])){
@@ -180,6 +193,6 @@ final class EventListener implements Listener{
 	}
 
 	private function blockHash(Position $pos) : string{
-		return implode(":", [$pos->getFloorX(), $pos->getFloorY(), $pos->getFloorZ(), $pos->getLevelNonNull()->getFolderName()]);
+		return implode(":", [$pos->getFloorX(), $pos->getFloorY(), $pos->getFloorZ(), $pos->getWorld()->getFolderName()]);
 	}
 }

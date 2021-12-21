@@ -73,19 +73,4 @@ class CustomItemLoader extends PluginBase{
 		$player = $event->getPlayer();
 		$player->getNetworkSession()->sendDataPacket(CustomItemManager::getInstance()->getPacket());
 	}
-
-	public function onDataPacketSend(DataPacketSendEvent $event) : void{
-		$packets = $event->getPackets();
-		foreach($packets as $packet){
-			if($packet instanceof StartGamePacket){
-				$packet->levelSettings->experiments = new Experiments([
-					"data_driven_items" => true
-				], true);
-			}elseif($packet instanceof ResourcePackStackPacket){
-				$packet->experiments = new Experiments([
-					"data_driven_items" => true
-				], true);
-			}
-		}
-	}
 }
