@@ -26,7 +26,6 @@ use alvin0319\CustomItemLoader\item\CustomItemBlock;
 use alvin0319\CustomItemLoader\item\CustomItemTrait;
 use alvin0319\CustomItemLoader\item\CustomToolItem;
 use alvin0319\CustomItemLoader\item\properties\CustomItemProperties;
-use InvalidStateException;
 use pocketmine\item\Item;
 use pocketmine\item\ItemFactory;
 use pocketmine\item\StringToItemParser;
