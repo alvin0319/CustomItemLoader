@@ -63,7 +63,7 @@ final class EventListener implements Listener{
 		}
 		$handled = false;
 		try{
-			$pos = new Vector3($packet->x, $packet->y, $packet->z);
+			$pos = new Vector3($packet->blockPosition->getX(), $packet->blockPosition->getY(), $packet->blockPosition->getZ());
 			$player = $event->getOrigin()?->getPlayer() ?: throw new AssumptionFailedError("This packet cannot be received from non-logged in player");
 			if($packet->action === PlayerAction::START_BREAK){
 				$item = $player->getInventory()->getItemInHand();
