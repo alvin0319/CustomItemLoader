@@ -25,7 +25,6 @@ use pocketmine\item\Item;
 use pocketmine\item\ItemFactory;
 use pocketmine\nbt\tag\CompoundTag;
 use ReflectionClass;
-use function in_array;
 
 final class CustomItemProperties{
 	/** @var string */
@@ -156,50 +155,12 @@ final class CustomItemProperties{
 		$tool = $data["tool"] ?? false;
 		$tool_type = $data["tool_type"] ?? BlockToolType::NONE;
 		$tool_tier = $data["tool_tier"] ?? 0;
-		$nbt = CompoundTag::create()
-			->setTag("components", CompoundTag::create()
-				->setTag("item_properties", CompoundTag::create()
-					->setInt("use_duration", 32)
-					->setInt("use_animation", ($food === 1 ? 1 : 0)) // 2 is potion, but not now
-					->setByte("allow_off_hand", $allow_off_hand)
-					->setByte("can_destroy_in_creative", $can_destroy_in_creative)
-					->setByte("creative_category", $creative_category)
-					->setByte("hand_equipped", $hand_equipped)
-					->setInt("max_stack_size", $max_stack_size)
-					->setFloat("mining_speed", $mining_speed)
-					->setTag("minecraft:icon", CompoundTag::create()
-						->setString("texture", $data["texture"])
-						->setString("legacy_id", $data["namespace"])
-					)
-				)
-			)
-			->setShort("minecraft:identifier", $runtimeId)
-			->setTag("minecraft:display_name", CompoundTag::create()
-				->setString("value", $data["name"])
-			)
-			->setTag("minecraft:on_use", CompoundTag::create()
-				->setByte("on_use", 1)
-			)->setTag("minecraft:on_use_on", CompoundTag::create()
-				->setByte("on_use_on", 1)
-			);
 
 		if(isset($data["durable"]) && (bool) ($data["durable"]) !== false){
-			$nbt->getCompoundTag("components")?->setTag("minecraft:durability", CompoundTag::create()
-				->setShort("damage_change", 1)
-				->setShort("max_durable", $data["max_durability"])
-			);
 			$this->durable = true;
 			$this->max_durability = $data["max_durability"];
 		}
 		if($food === 1){
-			$nbt->getCompoundTag("components")?->setTag("minecraft:food", CompoundTag::create()
-				->setByte("can_always_eat", $can_always_eat)
-				->setFloat("nutrition", $nutrition)
-				->setString("saturation_modifier", "low")
-			);
-			$nbt->getCompoundTag("components")?->setTag("minecraft:use_duration", CompoundTag::create()
-				->setInt("value", 1)
-			);
 			$this->food = true;
 			$this->nutrition = $data["nutrition"];
 			$this->can_always_eat = (bool) $can_always_eat;
@@ -208,41 +169,6 @@ final class CustomItemProperties{
 		}
 
 		if($armor){
-			if(!in_array($armor_class, $accepted_armor_values, true)){
-				throw new InvalidArgumentException("Armor class is invalid");
-			}
-			$nbt->getCompoundTag("components")?->setTag("minecraft:armor", CompoundTag::create()
-				->setString("texture_type", $armor_class)
-				->setInt("protection", 0)
-			);
-			$nbt->getCompoundTag("components")?->setTag("minecraft:wearable", CompoundTag::create()
-				->setInt("slot", $armor_slot_int)
-				->setByte("dispensable", 1)
-			);
-			/*
-			// TODO: find out what does this do
-			$nbt->getCompoundTag("components")?->getCompoundTag("item_properties")
-				?->setString("enchantable_slot", match($armor_slot){
-					"helmet" => "armor_helmet",
-					"chest" => "armor_torso",
-					"leggings" => "armor_legs",
-					"boots" => "armor_feet",
-					default => throw new AssumptionFailedError("Unknown armor type $armor_slot")
-				});
-
-			$nbt->getCompoundTag("components")?->getCompoundTag("item_properties")
-				?->setString("enchantable_value", "10");
-			*/
-			/*
-			$nbt->getCompoundTag("components")?->setTag(new CompoundTag("minecraft:durability", [
-				new ShortTag("damage_change", 1),
-				new ShortTag("max_durable", $data["max_durability"] ?? 64)
-			]));
-			*/
-			$nbt->getCompoundTag("components")?->setTag("minecraft:durability", CompoundTag::create()
-				->setShort("damage_change", 1)
-				->setShort("max_durable", $data["max_durability"] ?? 64)
-			);
 			$this->durable = true;
 			$this->max_durability = $data["max_durability"] ?? 64;
 
@@ -277,8 +203,6 @@ final class CustomItemProperties{
 		$this->attack_points = $attack_points;
 
 		$this->foil = $foil;
-
-		$this->nbt = $nbt;
 	}
 
 	public function getName() : string{
