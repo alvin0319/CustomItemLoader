@@ -18,12 +18,9 @@ declare(strict_types=1);
 
 namespace alvin0319\CustomItemLoader;
 
+use alvin0319\CustomItemLoader\command\CustomItemLoaderCommand;
+use alvin0319\CustomItemLoader\command\ResourcePackCreateCommand;
 use JackMD\UpdateNotifier\UpdateNotifier;
-use pocketmine\event\player\PlayerJoinEvent;
-use pocketmine\event\server\DataPacketSendEvent;
-use pocketmine\network\mcpe\protocol\ResourcePackStackPacket;
-use pocketmine\network\mcpe\protocol\StartGamePacket;
-use pocketmine\network\mcpe\protocol\types\Experiments;
 use pocketmine\plugin\PluginBase;
 use pocketmine\utils\SingletonTrait;
 use RuntimeException;
@@ -64,15 +61,15 @@ class CustomItemLoader extends PluginBase{
 			$this->getLogger()->notice("Detected this server isn't running on 19132 port. If you are running this server behind proxy, make sure to use this plugin on lobby.");
 		}
 
+		$this->getServer()->getCommandMap()->registerAll("customitemloader", [
+			new CustomItemLoaderCommand(),
+			new ResourcePackCreateCommand()
+		]);
+
 		CustomItemManager::getInstance()->registerDefaultItems($this->getConfig()->get("items", []));
 	}
 
 	public function getResourcePackFolder() : string{
 		return Path::join($this->getDataFolder(), "resource_packs");
-	}
-
-	public function onPlayerJoin(PlayerJoinEvent $event) : void{
-		$player = $event->getPlayer();
-		$player->getNetworkSession()->sendDataPacket(CustomItemManager::getInstance()->getPacket());
 	}
 }
