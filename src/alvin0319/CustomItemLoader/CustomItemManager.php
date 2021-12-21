@@ -123,7 +123,9 @@ final class CustomItemManager{
 
 			$new = clone $item;
 
-			StringToItemParser::getInstance()->register($item->getProperties()->getName(), fn() => $new);
+			if(StringToItemParser::getInstance()->parse($item->getProperties()->getName()) === null){
+				StringToItemParser::getInstance()->register($item->getProperties()->getName(), fn() => $new);
+			}
 
 			ItemFactory::getInstance()->register($item, true);
 		}catch(Throwable $e){
