@@ -87,6 +87,8 @@ final class CustomItemProperties{
 
 	protected int $foil;
 
+	protected int $armorSlot = ArmorInventory::SLOT_HEAD;
+
 	public function __construct(string $name, array $data){
 		$this->name = $name;
 		$this->parseData($data);
@@ -243,6 +245,8 @@ final class CustomItemProperties{
 			);
 			$this->durable = true;
 			$this->max_durability = $data["max_durability"] ?? 64;
+
+			$this->armorSlot = $armor_slot_int;
 		}
 
 		$runtimeId = $id + ($id > 0 ? 5000 : -5000);
@@ -387,6 +391,10 @@ final class CustomItemProperties{
 
 	public function getNbt() : CompoundTag{
 		return $this->nbt;
+	}
+
+	public function getArmorSlot() : int{
+		return $this->armorSlot;
 	}
 
 	public static function withoutData() : CustomItemProperties{

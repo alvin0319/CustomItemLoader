@@ -77,7 +77,7 @@ final class EventListener implements Listener{
 				$target = $player->getWorld()->getBlock($pos);
 
 				$ev = new PlayerInteractEvent($player, $player->getInventory()->getItemInHand(), $target, null, $packet->face, PlayerInteractEvent::LEFT_CLICK_BLOCK);
-				if($player->isSpectator() || $player->getLevelNonNull()->checkSpawnProtection($player, $target)){
+				if($player->isSpectator()){
 					$ev->cancel();
 				}
 
@@ -90,7 +90,7 @@ final class EventListener implements Listener{
 				$frameBlock = $player->getWorld()->getBlock($pos);
 				if($frameBlock instanceof ItemFrame && $frameBlock->getFramedItem() !== null){
 					if(lcg_value() <= $frameBlock->getItemDropChance()){
-						$player->getLevelNonNull()->dropItem($frameBlock->getPosition(), $frameBlock->getFramedItem());
+						$player->getWorld()->dropItem($frameBlock->getPosition(), $frameBlock->getFramedItem());
 					}
 					$frameBlock->setFramedItem(null);
 					$frameBlock->setItemRotation(0);
@@ -118,7 +118,7 @@ final class EventListener implements Listener{
 			}elseif($packet->action === PlayerAction::ABORT_BREAK){
 				$player->getWorld()->broadcastPacketToViewers($pos, LevelEventPacket::create(LevelEvent::BLOCK_STOP_BREAK, 0, $pos->asVector3()));
 				$handled = true;
-				$this->stopTask($player, Position::fromObject($pos, $player->getLevelNonNull()));
+				$this->stopTask($player, Position::fromObject($pos, $player->getWorld()));
 			}
 		}finally{
 			if($handled){

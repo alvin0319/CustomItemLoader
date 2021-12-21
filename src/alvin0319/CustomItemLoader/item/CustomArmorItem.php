@@ -18,16 +18,20 @@ declare(strict_types=1);
 
 namespace alvin0319\CustomItemLoader\item;
 
+use alvin0319\CustomItemLoader\item\properties\CustomItemProperties;
 use pocketmine\item\Armor;
+use pocketmine\item\ArmorTypeInfo;
+use pocketmine\item\ItemIdentifier;
 
 class CustomArmorItem extends Armor{
 	use CustomItemTrait;
 
-	public function getMaxDurability() : int{
-		return $this->getProperties()->getMaxDurability();
-	}
-
-	public function getDefensePoints() : int{
-		return $this->getProperties()->getDefencePoints();
+	public function __construct(string $name, array $data){
+		$this->properties = new CustomItemProperties($name, $data);
+		parent::__construct(new ItemIdentifier($this->properties->getId(), $this->properties->getMeta()), $this->properties->getName(), new ArmorTypeInfo(
+			$this->properties->getDefencePoints(),
+			$this->properties->getMaxDurability(),
+			$this->properties->getArmorSlot()
+		));
 	}
 }

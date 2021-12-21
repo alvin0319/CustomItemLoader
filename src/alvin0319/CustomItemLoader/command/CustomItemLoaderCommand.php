@@ -47,7 +47,7 @@ final class CustomItemLoaderCommand extends Command implements PluginOwned{
 		}
 		switch(array_shift($args)){
 			case "reload":
-				CustomItemManager::getInstance()->registerDefaultItems($this->getOwningPlugin()->getConfig()->get("items", []), true);
+				CustomItemManager::getInstance()->registerDefaultItems(CustomItemLoader::getInstance()->getConfig()->get("items", []), true);
 				$sender->sendMessage("Config was successfully loaded! the player who join next time will be affected.");
 				break;
 			default:
