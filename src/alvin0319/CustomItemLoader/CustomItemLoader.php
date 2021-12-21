@@ -53,6 +53,8 @@ class CustomItemLoader extends PluginBase{
 		CustomItemManager::reset();
 		CustomItemManager::getInstance()->registerDefaultItems($this->getConfig()->get("items", []));
 
+		$this->getServer()->getPluginManager()->registerEvents(new EventListener(), $this);
+
 		if($this->getServer()->getPort() !== 19132){
 			// TODO: proxy support
 			// maybe behind on the proxy
