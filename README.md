@@ -3,17 +3,7 @@ Plugin for PocketMine-MP that makes your custom item with the full feature!
 
 <a href="https://poggit.pmmp.io/p/CustomItemLoader"><img src="https://poggit.pmmp.io/shield.state/CustomItemLoader"></a><a href="https://poggit.pmmp.io/p/CustomItemLoader"><img src="https://poggit.pmmp.io/shield.dl/CustomItemLoader"></a>
 
-
-#### NOTE: This branch is for PocketMine-MP v4.0, if you are looking for PocketMine-MP v3.0, please go to [master](https://github.com/alvin0319/CustomItemLoader/tree/master) branch.
-
-# Supported branches
-
-|name|description|
-|---|---|
-|pm4|This branch, Mainly maintain this branch.|
-|master|For PM3, no future features will be added.|
-|bleeding-edge|For PM4, which added a various unknown features, do not use this branch on production.|
-
+### Support for PM3 has been removed.
 
 ## Reference
 All of these components were came from MCPE addon document and [wiki.vg](https://wiki.vg/Bedrock_Protocol)
