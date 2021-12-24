@@ -65,8 +65,6 @@ class CustomItemLoader extends PluginBase{
 			new CustomItemLoaderCommand(),
 			new ResourcePackCreateCommand()
 		]);
-
-		CustomItemManager::getInstance()->registerDefaultItems($this->getConfig()->get("items", []));
 	}
 
 	public function getResourcePackFolder() : string{
