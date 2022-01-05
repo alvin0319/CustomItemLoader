@@ -25,7 +25,6 @@ use alvin0319\CustomItemLoader\data\CustomItemData;
 use alvin0319\CustomItemLoader\item\properties\CustomItemProperties;
 use JackMD\UpdateNotifier\UpdateNotifier;
 use pocketmine\item\ItemFactory;
-use pocketmine\item\StringToItemParser;
 use pocketmine\plugin\PluginBase;
 use pocketmine\utils\SingletonTrait;
 use ref\api\addonsmanager\AddonsManager;
@@ -34,7 +33,6 @@ use Webmozart\PathUtil\Path;
 use function class_exists;
 use function is_array;
 use function is_dir;
-use function is_string;
 use function json_encode;
 use function mkdir;
 use function str_contains;
@@ -85,19 +83,19 @@ class CustomItemLoader extends PluginBase{
 				}
 				$content = (new CommentedJsonDecoder())->decode($behaviourPack->getFile($file), true);
 
-				$this->fixKey($content);
+				$fixed = $this->fixKey($content);
 
 				$mapper = new \JsonMapper();
 				/** @var CustomItemData $data */
-				$data = $mapper->map((new CommentedJsonDecoder())->decode(json_encode($content, JSON_THROW_ON_ERROR)), new CustomItemData);
+				$data = $mapper->map((new CommentedJsonDecoder())->decode(json_encode($fixed, JSON_THROW_ON_ERROR)), new CustomItemData);
 
 				$properties = CustomItemProperties::fromCustomItemData($data);
 
 				$item = CustomItemManager::getInstance()->getItemByProperties($properties);
 
-				ItemFactory::getInstance()->register($item, true);
+				CustomItemManager::getInstance()->registerItem($item);
 
-				StringToItemParser::getInstance()->register($properties->getName(), static fn() => clone $item);
+				ItemFactory::getInstance()->register($item, true);
 
 				$countRegistered++;
 			}
@@ -117,16 +115,17 @@ class CustomItemLoader extends PluginBase{
 		return Path::join($this->getDataFolder(), "resource_packs");
 	}
 
-	private function fixKey(array &$content) : void{
+	private function fixKey(array $content) : array{
+		$newArray = [];
 		foreach($content as $key => $value){
-			if(is_string($key)){
-				if(str_contains($key, ":")){
-					unset($content[$key]);
-					$content[str_replace(":", "_", $key)] = $value;
-				}
-			}elseif(is_array($value)){
-				$this->fixKey($value);
+			if(str_contains((string) $key, ":")){
+				$key = str_replace(":", "_", $key);
 			}
+			if(is_array($value)){
+				$value = $this->fixKey($value);
+			}
+			$newArray[$key] = $value;
 		}
+		return $newArray;
 	}
 }

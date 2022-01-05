@@ -27,9 +27,11 @@ use pocketmine\item\ItemFactory;
 use pocketmine\nbt\tag\CompoundTag;
 use ReflectionClass;
 use function explode;
-use function str_replace;
 
 final class CustomItemProperties{
+
+	private static int $itemId = 0;
+
 	/** @var string */
 	protected string $name;
 	/** @var int */
@@ -70,8 +72,8 @@ final class CustomItemProperties{
 	protected bool $armor = false;
 	/** @var int */
 	protected int $defence_points;
-	/** @var CompoundTag */
-	protected CompoundTag $nbt;
+	/** @var CompoundTag|null */
+	protected ?CompoundTag $nbt = null;
 	/** @var bool */
 	protected bool $isBlock = false;
 	/** @var int */
@@ -91,19 +93,17 @@ final class CustomItemProperties{
 
 	protected int $armorSlot = ArmorInventory::SLOT_HEAD;
 
+	protected string $texture;
+
+	protected string $legacy_id = "";
+
 	public function __construct(string $name, array $data){
 		$this->name = $name;
 		$this->parseData($data);
 	}
 
 	private function parseData(array $data) : void{
-		$id = (int) $data["id"];
-		$meta = (int) $data["meta"];
-
-		$namespace = (string) $data["namespace"];
-
-		$runtimeId = $id + ($id > 0 ? 5000 : -5000);
-
+		$id = 1000 + self::$itemId++;
 		$allow_off_hand = (int) ($data["allow_off_hand"] ?? false);
 		$can_destroy_in_creative = (int) ($data["can_destroy_in_creative"] ?? false);
 		$creative_category = (int) ($data["creative_category"] ?? 1); // 1 건축 2 자연 3 아이템
@@ -159,31 +159,12 @@ final class CustomItemProperties{
 		$tool_type = $data["tool_type"] ?? BlockToolType::NONE;
 		$tool_tier = $data["tool_tier"] ?? 0;
 
-		if(isset($data["durable"]) && (bool) ($data["durable"]) !== false){
-			$this->durable = true;
-			$this->max_durability = $data["max_durability"];
-		}
-		if($food === 1){
-			$this->food = true;
-			$this->nutrition = $data["nutrition"];
-			$this->can_always_eat = (bool) $can_always_eat;
-			$this->saturation = $saturation;
-			$this->residue = $residue;
-		}
-
-		if($armor){
-			$this->durable = true;
-			$this->max_durability = $data["max_durability"] ?? 64;
-
-			$this->armorSlot = $armor_slot_int;
-		}
-
-		$runtimeId = $id + ($id > 0 ? 5000 : -5000);
+		$runtimeId = 5000 + $id;
 
 		$this->id = $id;
 		$this->runtimeId = $runtimeId;
-		$this->meta = $meta;
-		$this->namespace = $namespace;
+		$this->meta = 0; // TODO
+		$this->namespace = $data["namespace"];
 		$this->allow_off_hand = (bool) $allow_off_hand;
 		$this->can_destroy_in_creative = (bool) $can_destroy_in_creative;
 		$this->creative_category = (int) $creative_category;
@@ -206,6 +187,98 @@ final class CustomItemProperties{
 		$this->attack_points = $attack_points;
 
 		$this->foil = $foil;
+
+		$nbt = CompoundTag::create()
+			->setTag("components", CompoundTag::create()
+				->setTag("item_properties", CompoundTag::create()
+					->setInt("use_duration", 32)
+					->setInt("use_animation", ($food === 1 ? 1 : 0)) // 2 is potion, but not now
+					->setByte("allow_off_hand", $allow_off_hand)
+					->setByte("can_destroy_in_creative", $can_destroy_in_creative)
+					->setByte("creative_category", $creative_category)
+					->setByte("hand_equipped", $hand_equipped)
+					->setInt("max_stack_size", $max_stack_size)
+					->setFloat("mining_speed", $mining_speed)
+					->setTag("minecraft:icon", CompoundTag::create()
+						->setString("texture", $data["texture"])
+						->setString("legacy_id", $data["namespace"])
+					)
+				)
+			)
+			->setShort("minecraft:identifier", $runtimeId)
+			->setTag("minecraft:display_name", CompoundTag::create()
+				->setString("value", $data["name"])
+			)
+			->setTag("minecraft:on_use", CompoundTag::create()
+				->setByte("on_use", 1)
+			)->setTag("minecraft:on_use_on", CompoundTag::create()
+				->setByte("on_use_on", 1)
+			);
+
+		if(isset($data["durable"]) && (bool) ($data["durable"]) !== false){
+			$nbt->getCompoundTag("components")?->setTag("minecraft:durability", CompoundTag::create()
+				->setShort("damage_change", 1)
+				->setShort("max_durable", $data["max_durability"])
+			);
+			$this->durable = true;
+			$this->max_durability = $data["max_durability"];
+		}
+		if($food === 1){
+			$nbt->getCompoundTag("components")?->setTag("minecraft:food", CompoundTag::create()
+				->setByte("can_always_eat", $can_always_eat)
+				->setFloat("nutrition", $nutrition)
+				->setString("saturation_modifier", "low")
+			);
+			$nbt->getCompoundTag("components")?->setTag("minecraft:use_duration", CompoundTag::create()
+				->setInt("value", 1)
+			);
+			$this->food = true;
+			$this->nutrition = $data["nutrition"];
+			$this->can_always_eat = (bool) $can_always_eat;
+			$this->saturation = $saturation;
+			$this->residue = $residue;
+		}
+
+		if($armor){
+			if(!in_array($armor_class, $accepted_armor_values, true)){
+				throw new InvalidArgumentException("Armor class is invalid");
+			}
+			$nbt->getCompoundTag("components")?->setTag("minecraft:armor", CompoundTag::create()
+				->setString("texture_type", $armor_class)
+				->setInt("protection", 0)
+			);
+			$nbt->getCompoundTag("components")?->setTag("minecraft:wearable", CompoundTag::create()
+				->setInt("slot", $armor_slot_int)
+				->setByte("dispensable", 1)
+			);
+			/*
+			// TODO: find out what does this do
+			$nbt->getCompoundTag("components")?->getCompoundTag("item_properties")
+				?->setString("enchantable_slot", match($armor_slot){
+					"helmet" => "armor_helmet",
+					"chest" => "armor_torso",
+					"leggings" => "armor_legs",
+					"boots" => "armor_feet",
+					default => throw new AssumptionFailedError("Unknown armor type $armor_slot")
+				});
+			$nbt->getCompoundTag("components")?->getCompoundTag("item_properties")
+				?->setString("enchantable_value", "10");
+			*/
+			/*
+			$nbt->getCompoundTag("components")?->setTag(new CompoundTag("minecraft:durability", [
+				new ShortTag("damage_change", 1),
+				new ShortTag("max_durable", $data["max_durability"] ?? 64)
+			]));
+			*/
+			$nbt->getCompoundTag("components")?->setTag("minecraft:durability", CompoundTag::create()
+				->setShort("damage_change", 1)
+				->setShort("max_durable", $data["max_durability"] ?? 64)
+			);
+			$this->durable = true;
+			$this->max_durability = $data["max_durability"] ?? 64;
+
+			$this->armorSlot = $armor_slot_int;
+		}
 	}
 
 	public function getName() : string{
@@ -316,12 +389,46 @@ final class CustomItemProperties{
 		return $this->attack_points;
 	}
 
-	public function getNbt() : CompoundTag{
+	public function getNbt() : ?CompoundTag{
 		return $this->nbt;
 	}
 
 	public function getArmorSlot() : int{
 		return $this->armorSlot;
+	}
+
+	public function buildNbt() : CompoundTag{
+		static $cache = null;
+		if($cache !== null){
+			return $cache;
+		}
+		$cache = CompoundTag::create()
+			->setTag("components", CompoundTag::create()
+				->setTag("item_properties", CompoundTag::create()
+					->setInt("use_duration", 32)
+					->setInt("use_animation", ($this->food ? 1 : 0)) // 2 is potion, but not now
+					->setByte("allow_off_hand", $this->allow_off_hand ? 1 : 0)
+					->setByte("can_destroy_in_creative", $this->can_destroy_in_creative ? 1 : 0)
+					->setByte("creative_category", $this->creative_category)
+					->setByte("hand_equipped", $this->hand_equipped ? 1 : 0)
+					->setInt("max_stack_size", $this->max_stack_size)
+					->setFloat("mining_speed", $this->mining_speed)
+					->setTag("minecraft:icon", CompoundTag::create()
+						->setString("texture", $this->texture)
+						->setString("legacy_id", $this->legacy_id)
+					)
+				)
+			)
+			->setShort("minecraft:identifier", $this->runtimeId)
+			->setTag("minecraft:display_name", CompoundTag::create()
+				->setString("value", $this->name)
+			)
+			->setTag("minecraft:on_use", CompoundTag::create()
+				->setByte("on_use", 1)
+			)->setTag("minecraft:on_use_on", CompoundTag::create()
+				->setByte("on_use_on", 1)
+			);
+		return $cache;
 	}
 
 	public static function withoutData() : CustomItemProperties{
@@ -331,8 +438,6 @@ final class CustomItemProperties{
 		return $newInstance;
 	}
 
-	private static int $itemId = 0;
-
 	public static function fromCustomItemData(CustomItemData $data) : CustomItemProperties{
 		$newInstance = self::withoutData();
 		$newInstance->id = 1000 + self::$itemId++;
@@ -340,6 +445,8 @@ final class CustomItemProperties{
 		$newInstance->meta = 0; // TODO
 		$newInstance->runtimeId = 5000 + $newInstance->id;
 		$newInstance->name = explode(":", $data->minecraft_item->description->identifier)[1];
+		$newInstance->texture = $data->minecraft_item->components->minecraft_icon->texture;
+		$newInstance->legacy_id = empty($data->minecraft_item->components->minecraft_icon->legacy_id) ? $newInstance->namespace : $data->minecraft_item->components->minecraft_icon->legacy_id;
 		if(!empty($data->minecraft_item->components->minecraft_hand_equipped)){
 			$newInstance->hand_equipped = $data->minecraft_item->components->minecraft_hand_equipped;
 		}
@@ -355,42 +462,28 @@ final class CustomItemProperties{
 		if(!empty($data->minecraft_item->components->minecraft_mining_speed)){
 			$newInstance->mining_speed = $data->minecraft_item->components->minecraft_mining_speed;
 		}
-//		if(!empty($data->minecraft_item->components->minecraft_food)){
-//			$newInstance->food = $data->minecraft_item->components->minecraft_food;
-//		}
-//		if(!empty($data->minecraft_item->components->minecraft_nutrition)){
-//			$newInstance->nutrition = $data->minecraft_item->components->minecraft_nutrition;
-//		}
-//		if(!empty($data->minecraft_item->components->minecraft_saturation)){
-//			$newInstance->saturation = $data->minecraft_item->components->minecraft_saturation;
-//		}
-//		if(!empty($data->minecraft_item->components->minecraft_can_always_eat)){
-//			$newInstance->can_always_eat = $data->minecraft_item->components->minecraft_can_always_eat;
-//		}
-//		if(!empty($data->minecraft_item->components->minecraft_residue)){
+		if(!empty($data->minecraft_item->components->minecraft_food)){
+			$newInstance->food = true;
+//			$newInstance->saturation = $data->minecraft_item->components->minecraft_food->saturation_modifier; // TODO: no saturation on behaviour pack?
+			$newInstance->nutrition = empty($data->minecraft_item->components->minecraft_food->nutrition) ? 0 : $data->minecraft_item->components->minecraft_food->nutrition;
+			$newInstance->can_always_eat = empty($data->minecraft_item->components->minecraft_food->can_always_eat) ? false : $data->minecraft_item->components->minecraft_food->can_always_eat;
+		}
+//		if(!empty($data->minecraft_item->components->minecraft_residue)){ // TODO: food residue
 //			$newInstance->residue = $data->minecraft_item->components->minecraft_residue;
 //		}
-//		if(!empty($data->minecraft_item->components->minecraft_durable)){
+//		if(!empty($data->minecraft_item->components->minecraft_durable)){ // TODO: durable
 //			$newInstance->durable = $data->minecraft_item->components->minecraft_durable;
 //		}
-//		if(!empty($data->minecraft_item->components->minecraft_max_durability)){
-//			$newInstance->max_durability = $data->minecraft_item->components->minecraft_max_durability;
-//		}
-//		if(!empty($data->minecraft_item->components->minecraft_armor)){
+//		if(!empty($data->minecraft_item->components->minecraft_armor)){  // TODO: armor
 //			$newInstance->armor = $data->minecraft_item->components->minecraft_armor;
 //		}
-//		if(!empty($data->minecraft_item->components->minecraft_defence_points)){
-//			$newInstance->defence_points = $data->minecraft_item->components->minecraft_defence_points;
-//		}
-//		if(!empty($data->minecraft_item->components->minecraft_is_block)){
+//		if(!empty($data->minecraft_item->components->minecraft_is_block)){ // TODO: itemblock
 //			$newInstance->isBlock = $data->minecraft_item->components->minecraft_is_block;
 //		}
-//		if(!empty($data->minecraft_item->components->minecraft_is_tool)){
+//		if(!empty($data->minecraft_item->components->minecraft_is_tool)){ // TODO: tool
 //			$newInstance->isTool = $data->minecraft_item->components->minecraft_is_tool;
 //		}
-//		if(!empty($data->minecraft_item->components->minecraft_add_creative_inventory)){
-//			$newInstance->add_creative_inventory = $data->minecraft_item->components->minecraft_add_creative_inventory;
-//		}
+		$newInstance->add_creative_inventory = true;
 		return $newInstance;
 	}
 }
