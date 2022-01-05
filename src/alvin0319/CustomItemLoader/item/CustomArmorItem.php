@@ -26,8 +26,7 @@ use pocketmine\item\ItemIdentifier;
 class CustomArmorItem extends Armor{
 	use CustomItemTrait;
 
-	public function __construct(string $name, array $data){
-		$this->properties = new CustomItemProperties($name, $data);
+	public function __construct(string $name, private CustomItemProperties $properties){
 		parent::__construct(new ItemIdentifier($this->properties->getId(), $this->properties->getMeta()), $this->properties->getName(), new ArmorTypeInfo(
 			$this->properties->getDefencePoints(),
 			$this->properties->getMaxDurability(),

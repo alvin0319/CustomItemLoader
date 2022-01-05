@@ -18,6 +18,7 @@ declare(strict_types=1);
 
 namespace alvin0319\CustomItemLoader\item\properties;
 
+use alvin0319\CustomItemLoader\data\CustomItemData;
 use InvalidArgumentException;
 use pocketmine\block\BlockToolType;
 use pocketmine\inventory\ArmorInventory;
@@ -25,6 +26,8 @@ use pocketmine\item\Item;
 use pocketmine\item\ItemFactory;
 use pocketmine\nbt\tag\CompoundTag;
 use ReflectionClass;
+use function explode;
+use function str_replace;
 
 final class CustomItemProperties{
 	/** @var string */
@@ -325,6 +328,69 @@ final class CustomItemProperties{
 		$class = new ReflectionClass(self::class);
 		/** @var CustomItemProperties $newInstance */
 		$newInstance = $class->newInstanceWithoutConstructor();
+		return $newInstance;
+	}
+
+	private static int $itemId = 0;
+
+	public static function fromCustomItemData(CustomItemData $data) : CustomItemProperties{
+		$newInstance = self::withoutData();
+		$newInstance->id = 1000 + self::$itemId++;
+		$newInstance->namespace = $data->minecraft_item->description->identifier;
+		$newInstance->meta = 0; // TODO
+		$newInstance->runtimeId = 5000 + $newInstance->id;
+		$newInstance->name = explode(":", $data->minecraft_item->description->identifier)[1];
+		if(!empty($data->minecraft_item->components->minecraft_hand_equipped)){
+			$newInstance->hand_equipped = $data->minecraft_item->components->minecraft_hand_equipped;
+		}
+		if(!empty($data->minecraft_item->components->minecraft_can_destroy_in_creative)){
+			$newInstance->can_destroy_in_creative = $data->minecraft_item->components->minecraft_can_destroy_in_creative;
+		}
+//		if(!empty($data->minecraft_item->components->minecraft_creative_category)){
+//			$newInstance->creative_category = $data->minecraft_item->components->minecraft_creative_category;
+//		}
+		if(!empty($data->minecraft_item->components->minecraft_max_stack_size)){
+			$newInstance->max_stack_size = $data->minecraft_item->components->minecraft_max_stack_size;
+		}
+		if(!empty($data->minecraft_item->components->minecraft_mining_speed)){
+			$newInstance->mining_speed = $data->minecraft_item->components->minecraft_mining_speed;
+		}
+//		if(!empty($data->minecraft_item->components->minecraft_food)){
+//			$newInstance->food = $data->minecraft_item->components->minecraft_food;
+//		}
+//		if(!empty($data->minecraft_item->components->minecraft_nutrition)){
+//			$newInstance->nutrition = $data->minecraft_item->components->minecraft_nutrition;
+//		}
+//		if(!empty($data->minecraft_item->components->minecraft_saturation)){
+//			$newInstance->saturation = $data->minecraft_item->components->minecraft_saturation;
+//		}
+//		if(!empty($data->minecraft_item->components->minecraft_can_always_eat)){
+//			$newInstance->can_always_eat = $data->minecraft_item->components->minecraft_can_always_eat;
+//		}
+//		if(!empty($data->minecraft_item->components->minecraft_residue)){
+//			$newInstance->residue = $data->minecraft_item->components->minecraft_residue;
+//		}
+//		if(!empty($data->minecraft_item->components->minecraft_durable)){
+//			$newInstance->durable = $data->minecraft_item->components->minecraft_durable;
+//		}
+//		if(!empty($data->minecraft_item->components->minecraft_max_durability)){
+//			$newInstance->max_durability = $data->minecraft_item->components->minecraft_max_durability;
+//		}
+//		if(!empty($data->minecraft_item->components->minecraft_armor)){
+//			$newInstance->armor = $data->minecraft_item->components->minecraft_armor;
+//		}
+//		if(!empty($data->minecraft_item->components->minecraft_defence_points)){
+//			$newInstance->defence_points = $data->minecraft_item->components->minecraft_defence_points;
+//		}
+//		if(!empty($data->minecraft_item->components->minecraft_is_block)){
+//			$newInstance->isBlock = $data->minecraft_item->components->minecraft_is_block;
+//		}
+//		if(!empty($data->minecraft_item->components->minecraft_is_tool)){
+//			$newInstance->isTool = $data->minecraft_item->components->minecraft_is_tool;
+//		}
+//		if(!empty($data->minecraft_item->components->minecraft_add_creative_inventory)){
+//			$newInstance->add_creative_inventory = $data->minecraft_item->components->minecraft_add_creative_inventory;
+//		}
 		return $newInstance;
 	}
 }

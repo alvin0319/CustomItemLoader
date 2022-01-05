@@ -42,12 +42,10 @@ use ReflectionProperty;
 use Throwable;
 
 final class CustomItemManager{
-	use SingletonTrait {
-		getInstance as getInstance_; // FIXME: This will valid when IntelliJ fixes singleton bug
-	}
+	use SingletonTrait;
 
 	public static function getInstance() : CustomItemManager{
-		return self::getInstance_();
+		return self::$instance ??= self::make();
 	}
 
 	/** @var Item[] */
@@ -155,23 +153,43 @@ final class CustomItemManager{
 		}
 	}
 
+
+	public static function getItemByProperties(CustomItemProperties $prop) : Item{
+		if($prop->isDurable()){
+			return new CustomDurableItem($prop->getName(), $prop);
+		}
+		if($prop->isFood()){
+			return new CustomFoodItem($prop->getName(), $prop);
+		}
+		if($prop->isArmor()){
+			return new CustomArmorItem($prop->getName(), $prop);
+		}
+		if($prop->isBlock()){
+			return new CustomItemBlock($prop->getName(), $prop);
+		}
+		if($prop->isTool()){
+			return new CustomToolItem($prop->getName(), $prop);
+		}
+		return new CustomItem($prop->getName(), $prop);
+	}
+
 	public static function getItem(string $name, array $data) : Item{
 		$prop = new CustomItemProperties($name, $data);
 		if($prop->isDurable()){
-			return new CustomDurableItem($name, $data);
+			return new CustomDurableItem($name, $prop);
 		}
 		if($prop->isFood()){
-			return new CustomFoodItem($name, $data);
+			return new CustomFoodItem($name, $prop);
 		}
 		if($prop->isArmor()){
-			return new CustomArmorItem($name, $data);
+			return new CustomArmorItem($name, $prop);
 		}
 		if($prop->isBlock()){
-			return new CustomItemBlock($name, $data);
+			return new CustomItemBlock($name, $prop);
 		}
 		if($prop->isTool()){
-			return new CustomToolItem($name, $data);
+			return new CustomToolItem($name, $prop);
 		}
-		return new CustomItem($name, $data);
+		return new CustomItem($name, $prop);
 	}
 }

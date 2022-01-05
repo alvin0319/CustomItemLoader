@@ -22,11 +22,8 @@ use alvin0319\CustomItemLoader\item\properties\CustomItemProperties;
 use pocketmine\item\ItemIdentifier;
 
 trait CustomItemTrait{
-	/** @var CustomItemProperties */
-	protected CustomItemProperties $properties;
 
-	public function __construct(string $name, array $data){
-		$this->properties = new CustomItemProperties($name, $data);
+	public function __construct(string $name, private CustomItemProperties $properties){
 		parent::__construct(new ItemIdentifier($this->properties->getId(), $this->properties->getMeta()), $this->properties->getName());
 	}
 

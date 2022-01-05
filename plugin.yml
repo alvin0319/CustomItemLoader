@@ -4,6 +4,9 @@ main: alvin0319\CustomItemLoader\CustomItemLoader
 version: 2.3.0
 api: 4.0.0
 
+depend:
+  - refAddonsManager
+
 extensions:
   Core: ">=8.0"
 

@@ -18,16 +18,28 @@ declare(strict_types=1);
 
 namespace alvin0319\CustomItemLoader;
 
+use Ahc\Json\Comment as CommentedJsonDecoder;
 use alvin0319\CustomItemLoader\command\CustomItemLoaderCommand;
 use alvin0319\CustomItemLoader\command\ResourcePackCreateCommand;
+use alvin0319\CustomItemLoader\data\CustomItemData;
+use alvin0319\CustomItemLoader\item\properties\CustomItemProperties;
 use JackMD\UpdateNotifier\UpdateNotifier;
+use pocketmine\item\ItemFactory;
+use pocketmine\item\StringToItemParser;
 use pocketmine\plugin\PluginBase;
 use pocketmine\utils\SingletonTrait;
+use ref\api\addonsmanager\AddonsManager;
 use RuntimeException;
 use Webmozart\PathUtil\Path;
 use function class_exists;
+use function is_array;
 use function is_dir;
+use function is_string;
+use function json_encode;
 use function mkdir;
+use function str_contains;
+use function str_replace;
+use function str_starts_with;
 
 class CustomItemLoader extends PluginBase{
 	use SingletonTrait;
@@ -61,6 +73,38 @@ class CustomItemLoader extends PluginBase{
 			$this->getLogger()->notice("Detected this server isn't running on 19132 port. If you are running this server behind proxy, make sure to use this plugin on lobby.");
 		}
 
+		$behaviourPacks = AddonsManager::getInstance()->getBehaviorPacks();
+
+		$countRegistered = 0;
+
+		foreach($behaviourPacks as $behaviourPack){
+			$fileList = $behaviourPack->getFileList();
+			foreach($fileList as $file){
+				if(!str_starts_with($file, "items/")){
+					continue;
+				}
+				$content = (new CommentedJsonDecoder())->decode($behaviourPack->getFile($file), true);
+
+				$this->fixKey($content);
+
+				$mapper = new \JsonMapper();
+				/** @var CustomItemData $data */
+				$data = $mapper->map((new CommentedJsonDecoder())->decode(json_encode($content, JSON_THROW_ON_ERROR)), new CustomItemData);
+
+				$properties = CustomItemProperties::fromCustomItemData($data);
+
+				$item = CustomItemManager::getInstance()->getItemByProperties($properties);
+
+				ItemFactory::getInstance()->register($item, true);
+
+				StringToItemParser::getInstance()->register($properties->getName(), static fn() => clone $item);
+
+				$countRegistered++;
+			}
+		}
+
+		$this->getLogger()->debug("Registered $countRegistered custom items");
+
 		$this->getServer()->getCommandMap()->registerAll("customitemloader", [
 			new CustomItemLoaderCommand(),
 			new ResourcePackCreateCommand()
@@ -71,5 +115,18 @@ class CustomItemLoader extends PluginBase{
 
 	public function getResourcePackFolder() : string{
 		return Path::join($this->getDataFolder(), "resource_packs");
+	}
+
+	private function fixKey(array &$content) : void{
+		foreach($content as $key => $value){
+			if(is_string($key)){
+				if(str_contains($key, ":")){
+					unset($content[$key]);
+					$content[str_replace(":", "_", $key)] = $value;
+				}
+			}elseif(is_array($value)){
+				$this->fixKey($value);
+			}
+		}
 	}
 }
