@@ -70,7 +70,7 @@ final class EventListener implements Listener{
 				if(!CustomItemManager::getInstance()->isCustomItem($item)){
 					return;
 				}
-				if($pos->distanceSquared($player) > 10000){
+				if($pos->distanceSquared($player->getPosition()) > 10000){
 					return;
 				}
 

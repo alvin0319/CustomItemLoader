@@ -107,14 +107,11 @@ class CustomItemLoader extends PluginBase{
 			new CustomItemLoaderCommand(),
 			new ResourcePackCreateCommand()
 		]);
-
-		CustomItemManager::getInstance()->registerDefaultItems($this->getConfig()->get("items", []));
 	}
 
 	public function getResourcePackFolder() : string{
 		return Path::join($this->getDataFolder(), "resource_packs");
 	}
-
 	private function fixKey(array $content) : array{
 		$newArray = [];
 		foreach($content as $key => $value){
