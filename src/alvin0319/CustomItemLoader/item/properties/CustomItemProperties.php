@@ -52,7 +52,7 @@ final class CustomItemProperties{
 	protected bool $hand_equipped = true;
 	/** @var int */
 	protected int $max_stack_size = 64;
-	/** @var int */
+	/** @var float */
 	protected float $mining_speed = 1;
 	/** @var bool */
 	protected bool $food = false;
@@ -143,10 +143,6 @@ final class CustomItemProperties{
 
 		$attack_points = (int) ($data["attack_points"] ?? 1);
 
-		$tool = $data["tool"] ?? false;
-		$tool_type = $data["tool_type"] ?? BlockToolType::NONE;
-		$tool_tier = $data["tool_tier"] ?? 0;
-
 		$isBlock = $data["isBlock"] ?? false;
 
 		$blockId = $isBlock ? $data["blockId"] : 0;
@@ -156,6 +152,7 @@ final class CustomItemProperties{
 		$tool = $data["tool"] ?? false;
 		$tool_type = $data["tool_type"] ?? BlockToolType::NONE;
 		$tool_tier = $data["tool_tier"] ?? 0;
+
 		$nbt = CompoundTag::create()
 			->setTag("components", CompoundTag::create()
 				->setTag("item_properties", CompoundTag::create()
