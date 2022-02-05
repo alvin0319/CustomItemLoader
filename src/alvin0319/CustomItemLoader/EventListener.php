@@ -30,11 +30,13 @@ use pocketmine\event\server\DataPacketSendEvent;
 use pocketmine\item\Item;
 use pocketmine\math\Vector3;
 use pocketmine\network\mcpe\protocol\LevelEventPacket;
+use pocketmine\network\mcpe\protocol\LevelSoundEventPacket;
 use pocketmine\network\mcpe\protocol\PlayerActionPacket;
 use pocketmine\network\mcpe\protocol\ResourcePackStackPacket;
 use pocketmine\network\mcpe\protocol\StartGamePacket;
 use pocketmine\network\mcpe\protocol\types\Experiments;
 use pocketmine\network\mcpe\protocol\types\LevelEvent;
+use pocketmine\network\mcpe\protocol\types\LevelSoundEvent;
 use pocketmine\network\mcpe\protocol\types\PlayerAction;
 use pocketmine\player\Player;
 use pocketmine\scheduler\ClosureTask;
@@ -113,6 +115,7 @@ final class EventListener implements Listener{
 						}
 						$this->scheduleTask(Position::fromObject($pos, $player->getWorld()), $player->getInventory()->getItemInHand(), $player, $breakTime);
 						$player->getWorld()->broadcastPacketToViewers($pos, LevelEventPacket::create(LevelEvent::BLOCK_START_BREAK, (int) (65535 / $breakTime), $pos->asVector3()));
+						$player->getWorld()->broadcastPacketToViewers($pos, LevelSoundEventPacket::nonActorSound(LevelSoundEvent::BREAK_BLOCK, $pos, false));
 					}
 				}
 			}elseif($packet->action === PlayerAction::ABORT_BREAK){
