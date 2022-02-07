@@ -142,11 +142,6 @@ final class EventListener implements Listener{
 		}
 	}
 
-	public function onPlayerJoin(PlayerJoinEvent $event) : void{
-		$player = $event->getPlayer();
-		$player->getNetworkSession()->sendDataPacket(CustomItemManager::getInstance()->getPacket());
-	}
-
 	public function onPlayerQuit(PlayerQuitEvent $event) : void{
 		$player = $event->getPlayer();
 		if(!isset($this->handlers[$player->getName()])){
