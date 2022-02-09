@@ -7,8 +7,6 @@ api: 4.0.0
 extensions:
   Core: ">=8.0"
 
-mcpe-protocol: 475
-
 permissions:
   customitemloader.command.rsc:
     default: op
