@@ -18,11 +18,8 @@ declare(strict_types=1);
 
 namespace alvin0319\CustomItemLoader;
 
-use pocketmine\block\BlockFactory;
-use pocketmine\block\BlockLegacyIds;
-use pocketmine\block\ItemFrame;
+use pocketmine\block\Block;
 use pocketmine\event\Listener;
-use pocketmine\event\player\PlayerInteractEvent;
 use pocketmine\event\player\PlayerJoinEvent;
 use pocketmine\event\player\PlayerQuitEvent;
 use pocketmine\event\server\DataPacketReceiveEvent;
@@ -30,101 +27,74 @@ use pocketmine\event\server\DataPacketSendEvent;
 use pocketmine\item\Item;
 use pocketmine\math\Vector3;
 use pocketmine\network\mcpe\protocol\LevelEventPacket;
-use pocketmine\network\mcpe\protocol\LevelSoundEventPacket;
-use pocketmine\network\mcpe\protocol\PlayerActionPacket;
+use pocketmine\network\mcpe\protocol\PlayerAuthInputPacket;
 use pocketmine\network\mcpe\protocol\ResourcePackStackPacket;
 use pocketmine\network\mcpe\protocol\StartGamePacket;
 use pocketmine\network\mcpe\protocol\types\Experiments;
 use pocketmine\network\mcpe\protocol\types\LevelEvent;
-use pocketmine\network\mcpe\protocol\types\LevelSoundEvent;
 use pocketmine\network\mcpe\protocol\types\PlayerAction;
+use pocketmine\network\mcpe\protocol\types\PlayerBlockActionStopBreak;
+use pocketmine\network\mcpe\protocol\types\PlayerBlockActionWithBlockInfo;
 use pocketmine\player\Player;
 use pocketmine\scheduler\ClosureTask;
 use pocketmine\scheduler\TaskHandler;
-use pocketmine\utils\AssumptionFailedError;
 use pocketmine\world\Position;
-use function ceil;
 use function floor;
 use function implode;
-use function lcg_value;
+use function var_dump;
 
 final class EventListener implements Listener{
 
 	/** @var TaskHandler[][] */
 	protected array $handlers = [];
 
-	/**
-	 * @param DataPacketReceiveEvent $event
-	 *
-	 * @priority HIGHEST
-	 */
+	/** @priority HIGHEST */
 	public function onDataPacketReceive(DataPacketReceiveEvent $event) : void{
 		$packet = $event->getPacket();
-		if(!$packet instanceof PlayerActionPacket){
+		if(!$packet instanceof PlayerAuthInputPacket){
+			return;
+		}
+		$blockActions = $packet->getBlockActions();
+		if($blockActions === null){
+			return;
+		}
+		$player = $event->getOrigin()->getPlayer();
+		if($player === null){
 			return;
 		}
 		$handled = false;
 		try{
-			$pos = new Vector3($packet->blockPosition->getX(), $packet->blockPosition->getY(), $packet->blockPosition->getZ());
-			$player = $event->getOrigin()?->getPlayer() ?: throw new AssumptionFailedError("This packet cannot be received from non-logged in player");
-			if($packet->action === PlayerAction::START_BREAK){
+			foreach($blockActions as $action){
 				$item = $player->getInventory()->getItemInHand();
 				if(!CustomItemManager::getInstance()->isCustomItem($item)){
-					return;
+					continue;
 				}
-				if($pos->distanceSquared($player->getPosition()) > 10000){
-					return;
-				}
-
-				$target = $player->getWorld()->getBlock($pos);
-
-				$ev = new PlayerInteractEvent($player, $player->getInventory()->getItemInHand(), $target, null, $packet->face, PlayerInteractEvent::LEFT_CLICK_BLOCK);
-				if($player->isSpectator()){
-					$ev->cancel();
-				}
-
-				$ev->call();
-				if($ev->isCancelled()){
-					$event->getOrigin()->getInvManager()?->syncSlot($player->getInventory(), $player->getInventory()->getHeldItemIndex());
-					return;
-				}
-
-				$frameBlock = $player->getWorld()->getBlock($pos);
-				if($frameBlock instanceof ItemFrame && $frameBlock->getFramedItem() !== null){
-					if(lcg_value() <= $frameBlock->getItemDropChance()){
-						$player->getWorld()->dropItem($frameBlock->getPosition(), $frameBlock->getFramedItem());
+				if($action instanceof PlayerBlockActionWithBlockInfo){
+					$blockPos = $action->getBlockPosition();
+					$pos = new Vector3($blockPos->getX(), $blockPos->getY(), $blockPos->getZ());
+					if($action->getActionType() === PlayerAction::START_BREAK){
+						$player->attackBlock($pos, $action->getFace());
+						$handled = true;
+					}elseif($action->getActionType() === PlayerAction::CRACK_BLOCK){
+						$player->continueBreakBlock($pos, $action->getFace());
+						$speed = $this->calculateBreakProgressPerTick($player->getWorld()->getBlock($pos), $player);
+						$player->getNetworkSession()->sendDataPacket(
+							LevelEventPacket::create(
+								LevelEvent::BLOCK_BREAK_SPEED,
+								(int) (65535 * $speed),
+								$pos
+							)
+						);
+						var_dump($speed);
 					}
-					$frameBlock->setFramedItem(null);
-					$frameBlock->setItemRotation(0);
-					$player->getWorld()->setBlock($pos, $frameBlock);
-					return;
+				}elseif($action instanceof PlayerBlockActionStopBreak){
+					$player->stopBreakBlock(new Vector3(0, 0, 0));
 				}
-				$block = $target->getSide($packet->face);
-				if($block->getId() === BlockLegacyIds::FIRE){
-					$player->getWorld()->setBlock($block->getPosition(), BlockFactory::getInstance()->get(BlockLegacyIds::AIR, 0));
-					return;
-				}
-
-				if(!$player->isCreative()){
-					$handled = true;
-					//TODO: improve this to take stuff like swimming, ladders, enchanted tools into account, fix wrong tool break time calculations for bad tools (pmmp/PocketMine-MP#211)
-					$breakTime = ceil($target->getBreakInfo()->getBreakTime($player->getInventory()->getItemInHand()) * 20);
-					if($breakTime > 0){
-						if($breakTime > 10){
-							$breakTime -= 10;
-						}
-						$this->scheduleTask(Position::fromObject($pos, $player->getWorld()), $player->getInventory()->getItemInHand(), $player, $breakTime);
-						$player->getWorld()->broadcastPacketToViewers($pos, LevelEventPacket::create(LevelEvent::BLOCK_START_BREAK, (int) (65535 / $breakTime), $pos->asVector3()));
-						$player->getWorld()->broadcastPacketToViewers($pos, LevelSoundEventPacket::nonActorSound(LevelSoundEvent::BREAK_BLOCK, $pos, false));
-					}
-				}
-			}elseif($packet->action === PlayerAction::ABORT_BREAK){
-				$player->getWorld()->broadcastPacketToViewers($pos, LevelEventPacket::create(LevelEvent::BLOCK_STOP_BREAK, 0, $pos->asVector3()));
-				$handled = true;
-				$this->stopTask($player, Position::fromObject($pos, $player->getWorld()));
+				break;
 			}
 		}finally{
 			if($handled){
+				var_dump("Cancelled");
 				$event->cancel();
 			}
 		}
@@ -196,5 +166,21 @@ final class EventListener implements Listener{
 
 	private function blockHash(Position $pos) : string{
 		return implode(":", [$pos->getFloorX(), $pos->getFloorY(), $pos->getFloorZ(), $pos->getWorld()->getFolderName()]);
+	}
+
+	/**
+	 * Returns the calculated break speed as percentage progress per game tick.
+	 */
+	private function calculateBreakProgressPerTick(Block $block, Player $player) : float{
+		if(!$block->getBreakInfo()->isBreakable()){
+			return 0.0;
+		}
+		//TODO: improve this to take stuff like swimming, ladders, enchanted tools into account, fix wrong tool break time calculations for bad tools (pmmp/PocketMine-MP#211)
+		$breakTimePerTick = $block->getBreakInfo()->getBreakTime($player->getInventory()->getItemInHand()) * 20;
+
+		if($breakTimePerTick > 0){
+			return 1 / $breakTimePerTick;
+		}
+		return 1;
 	}
 }
