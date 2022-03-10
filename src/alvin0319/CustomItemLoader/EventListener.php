@@ -41,7 +41,6 @@ use pocketmine\scheduler\TaskHandler;
 use pocketmine\world\Position;
 use function floor;
 use function implode;
-use function var_dump;
 
 final class EventListener implements Listener{
 
@@ -85,7 +84,6 @@ final class EventListener implements Listener{
 								$pos
 							)
 						);
-						var_dump($speed);
 					}
 				}elseif($action instanceof PlayerBlockActionStopBreak){
 					$player->stopBreakBlock(new Vector3(0, 0, 0));
@@ -94,7 +92,6 @@ final class EventListener implements Listener{
 			}
 		}finally{
 			if($handled){
-				var_dump("Cancelled");
 				$event->cancel();
 			}
 		}
