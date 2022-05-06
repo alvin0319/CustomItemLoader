@@ -23,7 +23,9 @@ use pocketmine\block\BlockToolType;
 use pocketmine\inventory\ArmorInventory;
 use pocketmine\item\Item;
 use pocketmine\item\ItemFactory;
+use pocketmine\nbt\NBT;
 use pocketmine\nbt\tag\CompoundTag;
+use pocketmine\nbt\tag\ListTag;
 use ReflectionClass;
 use function in_array;
 
@@ -89,6 +91,20 @@ final class CustomItemProperties{
 
 	protected int $armorSlot = ArmorInventory::SLOT_HEAD;
 
+	private bool $throwable = false;
+	/** @var bool Whether the item should use the swing animation when thrown. Default is set to false. */
+	private bool $do_swing_animation = false;
+	/** @var float The scale at which the power of the throw increases. Default is set to 1.0. */
+	private float $launch_power_scale = 1.0;
+	/** @var float The maximum duration to draw a throwable item. Default is set to 0.0. */
+	private float $max_draw_duration = 0.0;
+	/** @var float The maximum power to launch the throwable item. Default is set to 1.0. */
+	private float $max_launch_power = 1.0;
+	/** @var float The minimum duration to draw a throwable item. Default is set to 0.0. */
+	private float $min_draw_duration = 0.0;
+	/** @var bool Whether or not the power of the throw increases with duration charged. Default is set to false. */
+	private bool $scale_power_by_draw_duration = false;
+
 	public function __construct(string $name, array $data){
 		$this->name = $name;
 		$this->parseData($data);
@@ -122,7 +138,7 @@ final class CustomItemProperties{
 
 		$foil = (int) ($data["foil"] ?? 0);
 
-		$armor_slot_int = match($armor_slot){
+		$armor_slot_int = match ($armor_slot) {
 			"helmet" => ArmorInventory::SLOT_HEAD,
 			"chest" => ArmorInventory::SLOT_CHEST,
 			"leggings" => ArmorInventory::SLOT_LEGS,
@@ -152,6 +168,14 @@ final class CustomItemProperties{
 		$tool = $data["tool"] ?? false;
 		$tool_type = $data["tool_type"] ?? BlockToolType::NONE;
 		$tool_tier = $data["tool_tier"] ?? 0;
+
+		$throwable = $data["throwable"] ?? false;
+		$do_swing_animation = $data["do_swing_animation"] ?? false;
+		$launch_power_scale = $data["launch_power_scale"] ?? 1.0;
+		$max_launch_power = $data["max_launch_power"] ?? 1.0;
+		$max_draw_duration = $data["max_draw_duration"] ?? 0.0;
+		$min_draw_duration = $data["min_draw_duration"] ?? 0.0;
+		$scale_power_by_draw_duration = $data["scale_power_by_draw_duration"] ?? false;
 
 		$nbt = CompoundTag::create()
 			->setTag("components", CompoundTag::create()
@@ -244,6 +268,33 @@ final class CustomItemProperties{
 			$this->max_durability = $data["max_durability"] ?? 64;
 
 			$this->armorSlot = $armor_slot_int;
+		}
+
+		if($throwable){
+			$nbt->getCompoundTag("components")?->setTag("minecraft:throwable", CompoundTag::create()
+				->setByte("do_swing_animation", (int) $do_swing_animation)
+				->setFloat("launch_power_scale", $launch_power_scale)
+				->setFloat("max_draw_duration", $max_draw_duration)
+				->setFloat("max_launch_power", $max_launch_power)
+				->setFloat("min_draw_duration", $min_draw_duration)
+				->setByte("scale_power_by_draw_duration", (int) $scale_power_by_draw_duration)
+			);
+			$this->throwable = true;
+			$this->do_swing_animation = (bool) $do_swing_animation;
+			$this->launch_power_scale = $launch_power_scale;
+			$this->max_draw_duration = $max_draw_duration;
+			$this->max_launch_power = $max_launch_power;
+			$this->min_draw_duration = $min_draw_duration;
+			$this->scale_power_by_draw_duration = (bool) $scale_power_by_draw_duration;
+
+			$nbt->getCompoundTag("components")?->setTag("minecraft:shooter", CompoundTag::create()
+				->setTag("ammunition", new ListTag([], NBT::TAG_String)) // Dummy value
+				->setByte("charge_on_draw", 1)
+				->setFloat("launch_power_scale", $launch_power_scale)
+				->setFloat("max_draw_duration", $max_draw_duration)
+				->setFloat("max_launch_power", $max_launch_power)
+				->setFloat("scale_power_by_draw_duration", (int) $scale_power_by_draw_duration)
+			);
 		}
 
 		$runtimeId = $id + ($id > 0 ? 5000 : -5000);
@@ -392,6 +443,34 @@ final class CustomItemProperties{
 
 	public function getArmorSlot() : int{
 		return $this->armorSlot;
+	}
+
+	public function isThrowable() : bool{
+		return $this->throwable;
+	}
+
+	public function getLaunchPowerScale() : float{
+		return $this->launch_power_scale;
+	}
+
+	public function getMaxDrawDuration() : float{
+		return $this->max_draw_duration;
+	}
+
+	public function getMaxLaunchPower() : float{
+		return $this->max_launch_power;
+	}
+
+	public function getMinDrawDuration() : float{
+		return $this->min_draw_duration;
+	}
+
+	public function isDoSwingAnimation() : bool{
+		return $this->do_swing_animation;
+	}
+
+	public function isScalePowerByDrawDuration() : bool{
+		return $this->scale_power_by_draw_duration;
 	}
 
 	public static function withoutData() : CustomItemProperties{

@@ -102,11 +102,13 @@ final class EventListener implements Listener{
 		foreach($packets as $packet){
 			if($packet instanceof StartGamePacket){
 				$packet->levelSettings->experiments = new Experiments([
-					"data_driven_items" => true
+					"data_driven_items" => true,
+					"upcoming_creator_features" => true
 				], true);
 			}elseif($packet instanceof ResourcePackStackPacket){
 				$packet->experiments = new Experiments([
-					"data_driven_items" => true
+					"data_driven_items" => true,
+					"upcoming_creator_features" => true
 				], true);
 			}
 		}

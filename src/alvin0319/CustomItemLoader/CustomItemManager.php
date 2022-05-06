@@ -24,6 +24,7 @@ use alvin0319\CustomItemLoader\item\CustomFoodItem;
 use alvin0319\CustomItemLoader\item\CustomItem;
 use alvin0319\CustomItemLoader\item\CustomItemBlock;
 use alvin0319\CustomItemLoader\item\CustomItemTrait;
+use alvin0319\CustomItemLoader\item\CustomReleasableItem;
 use alvin0319\CustomItemLoader\item\CustomToolItem;
 use alvin0319\CustomItemLoader\item\properties\CustomItemProperties;
 use pocketmine\item\Item;
@@ -151,6 +152,9 @@ final class CustomItemManager{
 
 	public static function getItem(string $name, array $data) : Item{
 		$prop = new CustomItemProperties($name, $data);
+		if($prop->isThrowable()){
+			return new CustomReleasableItem($name, $data);
+		}
 		if($prop->isDurable()){
 			return new CustomDurableItem($name, $data);
 		}
