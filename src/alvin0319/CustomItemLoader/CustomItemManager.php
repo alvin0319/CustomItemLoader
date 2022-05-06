@@ -42,13 +42,7 @@ use ReflectionProperty;
 use Throwable;
 
 final class CustomItemManager{
-	use SingletonTrait {
-		getInstance as getInstance_; // FIXME: This will valid when IntelliJ fixes singleton bug
-	}
-
-	public static function getInstance() : CustomItemManager{
-		return self::getInstance_();
-	}
+	use SingletonTrait;
 
 	/** @var Item[] */
 	protected array $registered = [];
