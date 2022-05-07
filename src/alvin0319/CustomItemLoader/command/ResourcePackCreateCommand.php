@@ -73,13 +73,12 @@ class ResourcePackCreateCommand extends Command implements PluginOwned{
 				if(trim($pack_description ?? "") === ""){
 					$pack_description = "Resource pack for custom item";
 				}
-				$path = CustomItemLoader::getInstance()->getResourcePackFolder() . $pack_name . "/";
-				if(is_dir($path)){
+				if(is_dir($pathDir = Path::join(CustomItemLoader::getInstance()->getResourcePackFolder(), $pack_name))){
 					$sender->sendMessage("\"$pack_name\" is already in use");
 					return false;
 				}
-				if(!mkdir($path) && !is_dir($path)){
-					throw new RuntimeException(sprintf('Directory "%s" was not created', $path));
+				if(!mkdir($pathDir) && !is_dir($pathDir)){
+					throw new RuntimeException(sprintf('Directory "%s" was not created', $pathDir));
 				}
 
 				$protocolInfo = explode(".", ProtocolInfo::MINECRAFT_VERSION_NETWORK);
@@ -102,23 +101,23 @@ class ResourcePackCreateCommand extends Command implements PluginOwned{
 						]
 					]
 				];
-				file_put_contents($path . "manifest.json", json_encode($manifests, JSON_THROW_ON_ERROR | JSON_PRETTY_PRINT | JSON_BIGINT_AS_STRING));
-				if(!mkdir($concurrentDirectory = $path . "textures/") && !is_dir($concurrentDirectory)){
+				file_put_contents(Path::join($pathDir, "manifest.json"), json_encode($manifests, JSON_THROW_ON_ERROR | JSON_PRETTY_PRINT | JSON_BIGINT_AS_STRING));
+				if(!mkdir($concurrentDirectory = Path::join($pathDir, 'textures')) && !is_dir($concurrentDirectory)){
 					throw new RuntimeException(sprintf('Directory "%s" was not created', $concurrentDirectory));
 				}
-				if(!mkdir($concurrentDirectory = $path . "textures/items/") && !is_dir($concurrentDirectory)){
+				if(!mkdir($concurrentDirectory = Path::join($concurrentDirectory, 'items')) && !is_dir($concurrentDirectory)){
 					throw new RuntimeException(sprintf('Directory "%s" was not created', $concurrentDirectory));
 				}
-				if(!mkdir($concurrentDirectory = $path . "texts/") && !is_dir($concurrentDirectory)){
+				if(!mkdir($concurrentDirectory = Path::join($pathDir, 'texts')) && !is_dir($concurrentDirectory)){
 					throw new RuntimeException(sprintf('Directory "%s" was not created', $concurrentDirectory));
 				}
 
-				file_put_contents($path . "textures/item_texture.json", json_encode([
+				file_put_contents(Path::join($pathDir, 'textures', 'item_texture.json'), json_encode([
 					"resource_pack_name" => "vanilla",
 					"texture_name" => "atlas.items",
 					"texture_data" => []
 				], JSON_THROW_ON_ERROR | JSON_PRETTY_PRINT | JSON_BIGINT_AS_STRING));
-				file_put_contents($path . "texts/en_US.lang", "");
+				file_put_contents(Path::join($concurrentDirectory, 'en_US.lang'), "");
 				$sender->sendMessage("Resource pack creation was successful!");
 				break;
 			case "additem":
@@ -130,15 +129,15 @@ class ResourcePackCreateCommand extends Command implements PluginOwned{
 					$sender->sendMessage("Usage: /rsc additem [pack_name] [item_name] [namespace]");
 					return false;
 				}
-				if(!is_dir(CustomItemLoader::getInstance()->getResourcePackFolder() . $pack_name)){
+				if(!is_dir($pathDir = Path::join(CustomItemLoader::getInstance()->getResourcePackFolder(), $pack_name))){
 					$sender->sendMessage("Resource pack \"$pack_name\" is not found");
 				}
-				$file = file_get_contents($path = CustomItemLoader::getInstance()->getResourcePackFolder() . $pack_name . "/texts/en_US.lang");
+				$file = file_get_contents($path = Path::join($pathDir, 'texts', 'en_US.lang'));
 				$parsed = $this->parseLang($file);
 				$parsed["item." . $namespace] = $name;
 				file_put_contents($path, $this->combineLang($parsed));
 
-				$file = file_get_contents($path = CustomItemLoader::getInstance()->getResourcePackFolder() . $pack_name . "/textures/item_texture.json");
+				$file = file_get_contents($path = Path::join($pathDir, 'textures', 'item_texture.json'));
 				$parsed = json_decode($file, true, 512, JSON_THROW_ON_ERROR);
 				$parsed["texture_data"][$name] = ["textures" => "textures/items/{$name}"];
 				file_put_contents($path, json_encode($parsed, JSON_THROW_ON_ERROR | JSON_PRETTY_PRINT | JSON_BIGINT_AS_STRING));
@@ -146,19 +145,30 @@ class ResourcePackCreateCommand extends Command implements PluginOwned{
 				break;
 			case "makepack":
 				array_shift($args);
-				$name = array_shift($args);
-				if(trim($name ?? "") === ""){
+				$pack_name = array_shift($args);
+				if(trim($pack_name ?? "") === ""){
 					$sender->sendMessage("Usage: /rsc makepack [name]");
 					return false;
 				}
-				if(!is_dir($pathDir = CustomItemLoader::getInstance()->getResourcePackFolder() . $name . "/")){
-					$sender->sendMessage("Resource pack \"$name\" is not found");
+				if(!is_dir($pathDir = Path::join(CustomItemLoader::getInstance()->getResourcePackFolder(), $pack_name))){
+					$sender->sendMessage("Resource pack \"$pack_name\" is not found");
 					return false;
 				}
 				$zip = new ZipArchive();
-				$zip->open($path = CustomItemLoader::getInstance()->getResourcePackFolder() . $name . ".mcpack", ZipArchive::CREATE | ZipArchive::OVERWRITE);
-				$this->recursiveZipDir($zip, $pathDir);
+				$zip->open($path = $pathDir . ".mcpack", ZipArchive::CREATE | ZipArchive::OVERWRITE);
+
+				/** @var SplFileInfo $resource */
+				foreach(new RecursiveIteratorIterator(new RecursiveDirectoryIterator($pathDir)) as $resource){
+					if($resource->isFile()){
+						$relativePath = Path::normalize(preg_replace("/.*\/{$pack_name}\/*./U", '', $resource->getPathname()));
+						$zip->addFile($resource->getPathname(), $relativePath);
+					}
+				}
+
 				$zip->close();
+
+				//Filesystem::recursiveUnlink($pathDir);
+
 				$sender->sendMessage("Pack creation successful!");
 				$sender->sendMessage("Resource pack path: " . $path);
 				break;
@@ -187,31 +197,5 @@ class ResourcePackCreateCommand extends Command implements PluginOwned{
 			$res[] = $key . "=" . $value;
 		}
 		return implode("\n", $res);
-	}
-
-	public function recursiveZipDir(ZipArchive $zip, string $dir, string $tempDir = "") : void{
-		$dir = Filesystem::cleanPath($dir);
-		$tempDir = Filesystem::cleanPath($tempDir);
-		if(!str_ends_with($dir, "/")){
-			$dir .= "/";
-		}
-
-		if(trim($tempDir) !== "" && !str_ends_with($tempDir, "/")){
-			$tempDir .= "/";
-		}
-
-		$files = new RecursiveIteratorIterator(new RecursiveDirectoryIterator($dir), RecursiveIteratorIterator::LEAVES_ONLY | RecursiveDirectoryIterator::SKIP_DOTS);
-		/** @var SplFileInfo $file */
-		foreach($files as $file){
-			if(in_array($file->getFilename(), [".", ".."], true)){
-				continue;
-			}
-			if(!$file->isDir()){
-				$zip->addFile($dir . $file->getFilename(), $tempDir . $file->getFilename());
-			}else{
-				$zip->addEmptyDir($file->getFilename());
-				$this->recursiveZipDir($zip, $dir . $file->getFilename(), $tempDir . $file->getFilename() . "/");
-			}
-		}
 	}
 }
