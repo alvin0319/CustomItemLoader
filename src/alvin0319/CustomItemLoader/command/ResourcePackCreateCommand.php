@@ -159,7 +159,7 @@ class ResourcePackCreateCommand extends Command implements PluginOwned{
 				/** @var SplFileInfo $resource */
 				foreach(new RecursiveIteratorIterator(new RecursiveDirectoryIterator($pathDir)) as $resource){
 					if($resource->isFile()){
-						$relativePath = Path::normalize(preg_replace("/.*\/{$pack_name}\/*./U", '', $resource->getPathname()));
+						$relativePath = Path::normalize(preg_replace("/.*[\/\\\\]{$pack_name}[\/\\\\].*/U", '', $resource->getPathname()));
 						$zip->addFile($resource->getPathname(), $relativePath);
 					}
 				}
