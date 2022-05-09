@@ -29,7 +29,7 @@ Please refer to [this gist](https://gist.github.com/alvin0319/3f235b8eb05f6adfd1
 * A. Make sure to register item name on en_US.lang or other language files
 
 * Q. I set its config correctly or I used an example but item texture does not appear
-* A. If you are using this plugin behind a proxy such as WDPE, you should run this plugin also on the lobby server [L#53~57](https://github.com/alvin0319/CustomItemLoader/blob/master/src/alvin0319/CustomItemLoader/CustomItemLoader.php#L53#L57)
+* A. If you are using this plugin behind a proxy such as WDPE, you should run this plugin also on the lobby server. Also, please use [CustomItemLoader-WDPE](https://github.com/alvin0319/CustomItemLoader-WDPE) WaterdogPE plugin to prevent client crash.
 
 
 ## Donation

@@ -1,7 +1,7 @@
 name: CustomItemLoader
 author: alvin0319
 main: alvin0319\CustomItemLoader\CustomItemLoader
-version: 2.3.2
+version: 2.3.3
 api: 4.0.0
 
 extensions:
