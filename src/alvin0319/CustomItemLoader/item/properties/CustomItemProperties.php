@@ -220,9 +220,6 @@ final class CustomItemProperties{
 		}
 
 		if($armor){
-			if(!$this->durable){
-				throw new AssumptionFailedError("Armor should be durable");
-			}
 			if(!in_array($armor_class, $accepted_armor_values, true)){
 				throw new InvalidArgumentException("Armor class is invalid");
 			}
@@ -248,8 +245,6 @@ final class CustomItemProperties{
 			$nbt->getCompoundTag("components")?->getCompoundTag("item_properties")
 				?->setString("enchantable_value", "10");
 			*/
-			$this->durable = true;
-			$this->max_durability = $data["max_durability"] ?? 64;
 
 			$this->armorSlot = $armor_slot_int;
 		}
