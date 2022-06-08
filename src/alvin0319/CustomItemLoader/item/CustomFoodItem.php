@@ -33,7 +33,7 @@ class CustomFoodItem extends Food{
 	}
 
 	public function requiresHunger() : bool{
-		return $this->getProperties()->getCanAlwaysEat();
+		return !$this->getProperties()->getCanAlwaysEat();
 	}
 
 	public function getSaturationRestore() : float{
