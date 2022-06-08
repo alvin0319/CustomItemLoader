@@ -28,8 +28,8 @@ final class CustomItemBlock extends ItemBlock{
 		__construct as CustomItemTrait___construct;
 	}
 
-	public function __construct(string $name, array $data){
-		$this->properties = new CustomItemProperties($name, $data);
+	public function __construct(string $name, CustomItemProperties $properties){
+		$this->properties = $properties;
 		parent::__construct(new ItemIdentifier($this->properties->getId(), $this->properties->getMeta()), BlockFactory::getInstance()->get($this->properties->getBlockId(), $this->properties->getMeta()));
 		$this->name = $this->properties->getName();
 	}

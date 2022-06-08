@@ -91,7 +91,7 @@ final class CustomItemManager{
 
 	public function isCustomItem(Item $item) : bool{
 		foreach($this->registered as $other){
-			if($item->equals($other, false, $item->hasNamedTag())){
+			if($item->equals($other, false, false)){
 				return true;
 			}
 		}
@@ -152,20 +152,20 @@ final class CustomItemManager{
 	public static function getItem(string $name, array $data) : Item{
 		$prop = new CustomItemProperties($name, $data);
 		if($prop->isDurable()){
-			return new CustomDurableItem($name, $data);
+			return new CustomDurableItem($name, $prop);
 		}
 		if($prop->isFood()){
-			return new CustomFoodItem($name, $data);
+			return new CustomFoodItem($name, $prop);
 		}
 		if($prop->isArmor()){
-			return new CustomArmorItem($name, $data);
+			return new CustomArmorItem($name, $prop);
 		}
 		if($prop->isBlock()){
-			return new CustomItemBlock($name, $data);
+			return new CustomItemBlock($name, $prop);
 		}
 		if($prop->isTool()){
-			return new CustomToolItem($name, $data);
+			return new CustomToolItem($name, $prop);
 		}
-		return new CustomItem($name, $data);
+		return new CustomItem($name, $prop);
 	}
 }

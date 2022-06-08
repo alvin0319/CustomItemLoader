@@ -24,6 +24,7 @@ use pocketmine\inventory\ArmorInventory;
 use pocketmine\item\Item;
 use pocketmine\item\ItemFactory;
 use pocketmine\nbt\tag\CompoundTag;
+use pocketmine\utils\AssumptionFailedError;
 use ReflectionClass;
 use function in_array;
 
@@ -122,7 +123,7 @@ final class CustomItemProperties{
 
 		$foil = (int) ($data["foil"] ?? 0);
 
-		$armor_slot_int = match($armor_slot){
+		$armor_slot_int = match ($armor_slot) {
 			"helmet" => ArmorInventory::SLOT_HEAD,
 			"chest" => ArmorInventory::SLOT_CHEST,
 			"leggings" => ArmorInventory::SLOT_LEGS,
@@ -133,7 +134,21 @@ final class CustomItemProperties{
 
 		static $accepted_armor_values = ["gold", "none", "leather", "chain", "iron", "diamond", "elytra", "turtle", "netherite"];
 
-		//static $accepted_armor_position_values = ["slot.armor.legs", "none", "slot.weapon.mainhand", "slot.weapon.offhand", "slot.armor.head", "slot.armor.chest", "slot.armor.feet", "slot.hotbar", "slot.inventory", "slot.enderchest", "slot.saddle", "slot.armor", "slot.chest"];
+		static $armor_slot_int_to_string = [
+//			"none",
+//			"slot.weapon.mainhand",
+//			"slot.weapon.offhand",
+			ArmorInventory::SLOT_HEAD => "slot.armor.head",
+			ArmorInventory::SLOT_CHEST => "slot.armor.chest",
+			ArmorInventory::SLOT_LEGS => "slot.armor.legs",
+			ArmorInventory::SLOT_FEET => "slot.armor.feet",
+//			"slot.hotbar",
+//			"slot.inventory",
+//			"slot.enderchest",
+//			"slot.saddle",
+//			"slot.armor",
+//			"slot.chest"
+		];
 
 		$isBlock = $data["isBlock"] ?? false;
 
@@ -164,6 +179,7 @@ final class CustomItemProperties{
 					->setByte("hand_equipped", $hand_equipped)
 					->setInt("max_stack_size", $max_stack_size)
 					->setFloat("mining_speed", $mining_speed)
+					->setInt("max_damage", 0)
 					->setTag("minecraft:icon", CompoundTag::create()
 						->setString("texture", $data["texture"])
 						->setString("legacy_id", $data["namespace"])
@@ -173,29 +189,28 @@ final class CustomItemProperties{
 			->setShort("minecraft:identifier", $runtimeId)
 			->setTag("minecraft:display_name", CompoundTag::create()
 				->setString("value", $data["name"])
-			)
-			->setTag("minecraft:on_use", CompoundTag::create()
-				->setByte("on_use", 1)
-			)->setTag("minecraft:on_use_on", CompoundTag::create()
-				->setByte("on_use_on", 1)
 			);
 
 		if(isset($data["durable"]) && (bool) ($data["durable"]) !== false){
 			$nbt->getCompoundTag("components")?->setTag("minecraft:durability", CompoundTag::create()
-				->setShort("damage_change", 1)
-				->setShort("max_durable", $data["max_durability"])
+				->setTag("damage_chance", CompoundTag::create()
+					->setInt("min", 100) // maybe make this a config value
+					->setInt("max", 100) // maybe make this a config value
+				)
+				->setInt("max_durability", $data["max_durability"])
 			);
 			$this->durable = true;
 			$this->max_durability = $data["max_durability"];
 		}
 		if($food === 1){
+			if($this->durable){
+				throw new AssumptionFailedError("Food cannot be durable");
+			}
 			$nbt->getCompoundTag("components")?->setTag("minecraft:food", CompoundTag::create()
 				->setByte("can_always_eat", $can_always_eat)
-				->setFloat("nutrition", $nutrition)
-				->setString("saturation_modifier", "low")
-			);
-			$nbt->getCompoundTag("components")?->setTag("minecraft:use_duration", CompoundTag::create()
-				->setInt("value", 1)
+				->setInt("nutrition", $nutrition)
+				->setFloat("saturation_modifier", 0.6)
+				// wtf mojang, what did you do that
 			);
 			$this->food = true;
 			$this->nutrition = $data["nutrition"];
@@ -205,6 +220,9 @@ final class CustomItemProperties{
 		}
 
 		if($armor){
+			if(!$this->durable){
+				throw new AssumptionFailedError("Armor should be durable");
+			}
 			if(!in_array($armor_class, $accepted_armor_values, true)){
 				throw new InvalidArgumentException("Armor class is invalid");
 			}
@@ -213,7 +231,7 @@ final class CustomItemProperties{
 				->setInt("protection", 0)
 			);
 			$nbt->getCompoundTag("components")?->setTag("minecraft:wearable", CompoundTag::create()
-				->setInt("slot", $armor_slot_int)
+				->setString("slot", $armor_slot_int_to_string[$armor_slot_int] ?? throw new AssumptionFailedError("Unknown armor slot type"))
 				->setByte("dispensable", 1)
 			);
 			/*
@@ -230,16 +248,6 @@ final class CustomItemProperties{
 			$nbt->getCompoundTag("components")?->getCompoundTag("item_properties")
 				?->setString("enchantable_value", "10");
 			*/
-			/*
-			$nbt->getCompoundTag("components")?->setTag(new CompoundTag("minecraft:durability", [
-				new ShortTag("damage_change", 1),
-				new ShortTag("max_durable", $data["max_durability"] ?? 64)
-			]));
-			*/
-			$nbt->getCompoundTag("components")?->setTag("minecraft:durability", CompoundTag::create()
-				->setShort("damage_change", 1)
-				->setShort("max_durable", $data["max_durability"] ?? 64)
-			);
 			$this->durable = true;
 			$this->max_durability = $data["max_durability"] ?? 64;
 

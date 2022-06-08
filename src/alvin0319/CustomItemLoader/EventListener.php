@@ -20,12 +20,12 @@ namespace alvin0319\CustomItemLoader;
 
 use pocketmine\block\Block;
 use pocketmine\event\Listener;
-use pocketmine\event\player\PlayerJoinEvent;
 use pocketmine\event\player\PlayerQuitEvent;
 use pocketmine\event\server\DataPacketReceiveEvent;
 use pocketmine\event\server\DataPacketSendEvent;
 use pocketmine\item\Item;
 use pocketmine\math\Vector3;
+use pocketmine\network\mcpe\protocol\BiomeDefinitionListPacket;
 use pocketmine\network\mcpe\protocol\LevelEventPacket;
 use pocketmine\network\mcpe\protocol\PlayerAuthInputPacket;
 use pocketmine\network\mcpe\protocol\ResourcePackStackPacket;
@@ -108,13 +108,12 @@ final class EventListener implements Listener{
 				$packet->experiments = new Experiments([
 					"data_driven_items" => true
 				], true);
+			}elseif($packet instanceof BiomeDefinitionListPacket){
+				foreach($event->getTargets() as $session){
+					$session->sendDataPacket(CustomItemManager::getInstance()->getPacket());
+				}
 			}
 		}
-	}
-
-	public function onPlayerJoin(PlayerJoinEvent $event) : void{
-		$player = $event->getPlayer();
-		$player->getNetworkSession()->sendDataPacket(CustomItemManager::getInstance()->getPacket());
 	}
 
 	public function onPlayerQuit(PlayerQuitEvent $event) : void{
