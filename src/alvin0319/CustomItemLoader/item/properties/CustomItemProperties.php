@@ -350,7 +350,7 @@ final class CustomItemProperties{
 	}
 
 	public function getMaxDurability() : int{
-		return $this->max_durability;
+		return $this->max_durability ?? 64;
 	}
 
 	public function isArmor() : bool{
