@@ -24,6 +24,8 @@ use pocketmine\inventory\ArmorInventory;
 use pocketmine\item\Item;
 use pocketmine\item\ItemFactory;
 use pocketmine\nbt\tag\CompoundTag;
+use pocketmine\nbt\tag\FloatTag;
+use pocketmine\nbt\tag\ListTag;
 use pocketmine\utils\AssumptionFailedError;
 use ReflectionClass;
 use function in_array;
@@ -248,6 +250,46 @@ final class CustomItemProperties{
 			$this->armorSlot = $armor_slot_int;
 		}
 
+		if(isset($data["render_offset"]) && ($data["render_offset"]["enabled"] ?? false)){
+			$pngSize = $data["render_offset"]["size"] ?? 16;
+			[$x, $y, $z] = $this->calculateOffset($pngSize);
+			// TODO: Find out rotation and position formula
+			$nbt->getCompoundTag("components")?->setTag("minecraft:render_offsets", CompoundTag::create()
+				->setTag("main_hand", CompoundTag::create()
+					->setTag("first_person", CompoundTag::create()
+						->setTag("scale", new ListTag([
+							new FloatTag($x),
+							new FloatTag($y),
+							new FloatTag($z)
+						]))
+					)
+					->setTag("third_person", CompoundTag::create()
+						->setTag("scale", new ListTag([
+							new FloatTag($x),
+							new FloatTag($y),
+							new FloatTag($z)
+						]))
+					)
+				)
+				->setTag("off_hand", CompoundTag::create()
+					->setTag("first_person", CompoundTag::create()
+						->setTag("scale", new ListTag([
+							new FloatTag($x),
+							new FloatTag($y),
+							new FloatTag($z)
+						]))
+					)
+					->setTag("third_person", CompoundTag::create()
+						->setTag("scale", new ListTag([
+							new FloatTag($x),
+							new FloatTag($y),
+							new FloatTag($z)
+						]))
+					)
+				)
+			);
+		}
+
 		$runtimeId = $id + ($id > 0 ? 5000 : -5000);
 
 		$this->id = $id;
@@ -401,5 +443,17 @@ final class CustomItemProperties{
 		/** @var CustomItemProperties $newInstance */
 		$newInstance = $class->newInstanceWithoutConstructor();
 		return $newInstance;
+	}
+
+	private function calculateOffset(int $size) : array{
+		if(!$this->hand_equipped){
+			[$x, $y, $z] = [0.075, 0.125, 0.075];
+		}else{
+			[$x, $y, $z] = [0.1, 0.1, 0.1];
+		}
+		$newX = $x / ($size / 16);
+		$newY = $y / ($size / 16);
+		$newZ = $z / ($size / 16);
+		return [$newX, $newY, $newZ];
 	}
 }
