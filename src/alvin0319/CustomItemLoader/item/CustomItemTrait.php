@@ -37,4 +37,8 @@ trait CustomItemTrait{
 	public function getAttackPoints() : int{
 		return $this->properties->getAttackPoints();
 	}
+
+	public function getCooldownTicks() : int{
+		return $this->properties->getCooldown();
+	}
 }

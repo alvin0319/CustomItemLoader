@@ -29,6 +29,7 @@ use pocketmine\nbt\tag\ListTag;
 use pocketmine\utils\AssumptionFailedError;
 use ReflectionClass;
 use function in_array;
+use function is_numeric;
 
 final class CustomItemProperties{
 	/** @var string */
@@ -91,6 +92,8 @@ final class CustomItemProperties{
 	protected int $foil;
 
 	protected int $armorSlot = ArmorInventory::SLOT_HEAD;
+
+	private int $cooldown = 0;
 
 	public function __construct(string $name, array $data){
 		$this->name = $name;
@@ -290,6 +293,16 @@ final class CustomItemProperties{
 			);
 		}
 
+		if(isset($data["cooldown"]) && is_numeric($data["cooldown"])){
+			$this->cooldown = $data["cooldown"];
+			if($this->cooldown > 0){
+				$nbt->getCompoundTag("components")?->setTag("minecraft:cooldown", CompoundTag::create()
+					->setString("category", "attack")
+					->setFloat("duration", $this->cooldown / 20)
+				);
+			}
+		}
+
 		$runtimeId = $id + ($id > 0 ? 5000 : -5000);
 
 		$this->id = $id;
@@ -436,6 +449,10 @@ final class CustomItemProperties{
 
 	public function getArmorSlot() : int{
 		return $this->armorSlot;
+	}
+
+	public function getCooldown() : int{
+		return $this->cooldown;
 	}
 
 	public static function withoutData() : CustomItemProperties{
