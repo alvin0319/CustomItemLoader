@@ -22,12 +22,4 @@ use pocketmine\item\Item;
 
 class CustomItem extends Item{
 	use CustomItemTrait;
-
-	public function getMaxStackSize() : int{
-		return $this->getProperties()->getMaxStackSize();
-	}
-
-	public function getMiningEfficiency(bool $isCorrectTool) : float{
-		return $this->properties->getMiningSpeed();
-	}
 }

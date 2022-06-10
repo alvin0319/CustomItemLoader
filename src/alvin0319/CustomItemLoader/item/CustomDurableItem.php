@@ -25,10 +25,6 @@ use pocketmine\item\Durable;
 class CustomDurableItem extends Durable{
 	use CustomItemTrait;
 
-	public function getMaxStackSize() : int{
-		return $this->getProperties()->getMaxStackSize();
-	}
-
 	public function getMaxDurability() : int{
 		return $this->getProperties()->getMaxDurability();
 	}
@@ -39,12 +35,5 @@ class CustomDurableItem extends Durable{
 
 	public function onAttackEntity(Entity $victim) : bool{
 		return $this->applyDamage(1);
-	}
-
-	public function getMiningEfficiency(bool $isCorrectTool) : float{
-		if($isCorrectTool){
-			return $this->getProperties()->getMiningSpeed();
-		}
-		return parent::getMiningEfficiency($isCorrectTool);
 	}
 }

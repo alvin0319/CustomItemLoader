@@ -22,7 +22,6 @@ use alvin0319\CustomItemLoader\item\CustomArmorItem;
 use alvin0319\CustomItemLoader\item\CustomDurableItem;
 use alvin0319\CustomItemLoader\item\CustomFoodItem;
 use alvin0319\CustomItemLoader\item\CustomItem;
-use alvin0319\CustomItemLoader\item\CustomItemBlock;
 use alvin0319\CustomItemLoader\item\CustomItemTrait;
 use alvin0319\CustomItemLoader\item\CustomToolItem;
 use alvin0319\CustomItemLoader\item\properties\CustomItemProperties;
@@ -159,9 +158,6 @@ final class CustomItemManager{
 		}
 		if($prop->isArmor()){
 			return new CustomArmorItem($name, $prop);
-		}
-		if($prop->isBlock()){
-			return new CustomItemBlock($name, $prop);
 		}
 		if($prop->isTool()){
 			return new CustomToolItem($name, $prop);

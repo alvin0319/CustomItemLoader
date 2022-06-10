@@ -41,4 +41,23 @@ trait CustomItemTrait{
 	public function getCooldownTicks() : int{
 		return $this->properties->getCooldown();
 	}
+
+	public function getBlockToolType() : int{
+		return $this->properties->getBlockToolType();
+	}
+
+	public function getBlockToolHarvestLevel() : int{
+		return $this->properties->getBlockToolHarvestLevel();
+	}
+
+	public function getMiningEfficiency(bool $isCorrectTool) : float{
+		if($isCorrectTool){
+			return $this->properties->getMiningSpeed();
+		}
+		return parent::getMiningEfficiency(false);
+	}
+
+	public function getMaxStackSize() : int{
+		return $this->getProperties()->getMaxStackSize();
+	}
 }

@@ -24,14 +24,6 @@ final class CustomToolItem extends Tool{
 	use CustomItemTrait;
 
 	public function getMaxDurability() : int{
-		return $this->getProperties()->getMaxDurability();
-	}
-
-	public function getBlockToolHarvestLevel() : int{
-		return $this->getProperties()->getBlockToolHarvestLevel();
-	}
-
-	public function getBlockToolType() : int{
-		return $this->getProperties()->getBlockToolType();
+		return $this->properties->getMaxDurability();
 	}
 }
