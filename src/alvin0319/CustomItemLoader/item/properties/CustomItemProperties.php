@@ -23,6 +23,8 @@ use pocketmine\block\BlockToolType;
 use pocketmine\inventory\ArmorInventory;
 use pocketmine\item\Item;
 use pocketmine\item\ItemFactory;
+use pocketmine\item\ItemTypeIds;
+use pocketmine\item\VanillaItems;
 use pocketmine\nbt\tag\CompoundTag;
 use pocketmine\nbt\tag\FloatTag;
 use pocketmine\nbt\tag\ListTag;
@@ -95,12 +97,17 @@ final class CustomItemProperties{
 
 	private int $cooldown = 0;
 
+	private int $typeId = ItemTypeIds::FIRST_UNUSED_ITEM_ID + 1;
+
 	public function __construct(string $name, array $data){
 		$this->name = $name;
 		$this->parseData($data);
 	}
 
 	private function parseData(array $data) : void{
+		if(!isset($data["type_id"])){
+			throw new InvalidArgumentException("type_id is required");
+		}
 		if(!isset($data["id"])){
 			throw new InvalidArgumentException("id is required");
 		}
@@ -120,6 +127,7 @@ final class CustomItemProperties{
 
 		$runtimeId = $id + ($id > 0 ? 5000 : -5000);
 
+		$this->typeId = (int)$data["type_id"];
 		$this->id = $id;
 		$this->runtimeId = $runtimeId;
 		$this->meta = $meta;
@@ -154,7 +162,8 @@ final class CustomItemProperties{
 		}
 
 		if(isset($data["residue"])){
-			$this->setResidue(ItemFactory::getInstance()->get((int) $data["residue"]["id"], (int) ($data["residue"]["meta"] ?? 0)));
+//			$this->setResidue(ItemFactory::getInstance()->get((int) $data["residue"]["id"], (int) ($data["residue"]["meta"] ?? 0)));
+			$this->setResidue(VanillaItems::AIR()); //TODO..
 		}
 
 		if(isset($data["armor"]) && $data["armor"]){
@@ -196,6 +205,10 @@ final class CustomItemProperties{
 		if(isset($data["cooldown"]) && is_numeric($data["cooldown"])){
 			$this->setCooldown($data["cooldown"]);
 		}
+	}
+
+	public function getTypeId(): int{
+		return $this->typeId;
 	}
 
 	public function getName() : string{

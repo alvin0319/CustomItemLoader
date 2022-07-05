@@ -25,6 +25,7 @@ use alvin0319\CustomItemLoader\item\CustomItem;
 use alvin0319\CustomItemLoader\item\CustomItemTrait;
 use alvin0319\CustomItemLoader\item\CustomToolItem;
 use alvin0319\CustomItemLoader\item\properties\CustomItemProperties;
+use pocketmine\data\bedrock\item\SavedItemData;
 use pocketmine\item\Item;
 use pocketmine\item\ItemFactory;
 use pocketmine\item\StringToItemParser;
@@ -36,6 +37,7 @@ use pocketmine\network\mcpe\protocol\types\CacheableNbt;
 use pocketmine\network\mcpe\protocol\types\ItemComponentPacketEntry;
 use pocketmine\network\mcpe\protocol\types\ItemTypeEntry;
 use pocketmine\utils\SingletonTrait;
+use pocketmine\world\format\io\GlobalItemDataHandlers;
 use ReflectionClass;
 use ReflectionProperty;
 use Throwable;
@@ -64,18 +66,16 @@ final class CustomItemManager{
 	protected array $itemTypeEntries = [];
 
 	public function __construct(){
-		$ref = new ReflectionClass(ItemTranslator::class);
-		$this->coreToNetMap = $ref->getProperty("simpleCoreToNetMapping");
-		$this->netToCoreMap = $ref->getProperty("simpleNetToCoreMapping");
+		$ref = new ReflectionClass(ItemTypeDictionary::class);
+		$this->coreToNetMap = $ref->getProperty('stringToIntMap');
+		$this->netToCoreMap = $ref->getProperty('intToStringIdMap');
+		$this->itemTypeMap = $ref->getProperty('itemTypes');
 		$this->coreToNetMap->setAccessible(true);
 		$this->netToCoreMap->setAccessible(true);
+		$this->itemTypeMap ->setAccessible(true);
 
-		$this->coreToNetValues = $this->coreToNetMap->getValue(ItemTranslator::getInstance());
-		$this->netToCoreValues = $this->netToCoreMap->getValue(ItemTranslator::getInstance());
-
-		$ref_1 = new ReflectionClass(ItemTypeDictionary::class);
-		$this->itemTypeMap = $ref_1->getProperty("itemTypes");
-		$this->itemTypeMap->setAccessible(true);
+		$this->coreToNetValues = $this->coreToNetMap->getValue(GlobalItemTypeDictionary::getInstance()->getDictionary());
+		$this->netToCoreValues = $this->netToCoreMap->getValue(GlobalItemTypeDictionary::getInstance()->getDictionary());
 
 		$this->itemTypeEntries = $this->itemTypeMap->getValue(GlobalItemTypeDictionary::getInstance()->getDictionary());
 
@@ -102,25 +102,29 @@ final class CustomItemManager{
 	 */
 	public function registerItem($item) : void{
 		try{
-			$id = $item->getProperties()->getId();
-			$runtimeId = $item->getProperties()->getRuntimeId();
+			$properties = $item->getProperties();
+			$namespace = $properties->getNamespace();
+			$meta = $properties->getMeta();
 
-			$this->coreToNetValues[$id] = $runtimeId;
-			$this->netToCoreValues[$runtimeId] = $id;
+			$this->coreToNetValues[$namespace] = $properties->getRuntimeId();
+			$this->netToCoreValues[$properties->getRuntimeId()] = $namespace;
 
-			$this->itemTypeEntries[] = new ItemTypeEntry($item->getProperties()->getNamespace(), $runtimeId, true);
+			$this->itemTypeEntries[] = new ItemTypeEntry($namespace, $properties->getRuntimeId(), true);
 
-			$this->packetEntries[] = new ItemComponentPacketEntry($item->getProperties()->getNamespace(), new CacheableNbt($item->getProperties()->getNbt()));
+			$this->packetEntries[] = new ItemComponentPacketEntry($namespace, new CacheableNbt($properties->getNbt()));
 
 			$this->registered[] = $item;
 
 			$new = clone $item;
 
-			if(StringToItemParser::getInstance()->parse($item->getProperties()->getName()) === null){
-				StringToItemParser::getInstance()->register($item->getProperties()->getName(), fn() => $new);
+			if(StringToItemParser::getInstance()->parse($properties->getName()) === null){
+				StringToItemParser::getInstance()->register($properties->getName(), fn() => $new);
 			}
 
 			ItemFactory::getInstance()->register($item, true);
+
+			GlobalItemDataHandlers::getSerializer()->map($item, fn() => new SavedItemData($namespace, $meta, null, null));
+			GlobalItemDataHandlers::getDeserializer()->map($namespace, fn() => $new);
 		}catch(Throwable $e){
 			throw new \InvalidArgumentException("Failed to register item: " . $e->getMessage(), $e->getLine(), $e);
 		}
@@ -128,8 +132,8 @@ final class CustomItemManager{
 	}
 
 	private function refresh() : void{
-		$this->netToCoreMap->setValue(ItemTranslator::getInstance(), $this->netToCoreValues);
-		$this->coreToNetMap->setValue(ItemTranslator::getInstance(), $this->coreToNetValues);
+		$this->netToCoreMap->setValue(GlobalItemTypeDictionary::getInstance()->getDictionary(), $this->netToCoreValues);
+		$this->coreToNetMap->setValue(GlobalItemTypeDictionary::getInstance()->getDictionary(), $this->coreToNetValues);
 		$this->itemTypeMap->setValue(GlobalItemTypeDictionary::getInstance()->getDictionary(), $this->itemTypeEntries);
 		$this->packet = ItemComponentPacket::create($this->packetEntries);
 	}
