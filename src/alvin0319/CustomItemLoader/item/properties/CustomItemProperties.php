@@ -30,7 +30,6 @@ use pocketmine\utils\AssumptionFailedError;
 use ReflectionClass;
 use function in_array;
 use function is_numeric;
-use function var_dump;
 
 final class CustomItemProperties{
 	/** @var string */
@@ -500,7 +499,6 @@ final class CustomItemProperties{
 				->setString("category", "attack")
 				->setFloat("duration", $this->cooldown / 20)
 			);
-			var_dump($this->nbt);
 		}
 	}
 
