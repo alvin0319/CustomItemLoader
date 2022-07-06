@@ -45,25 +45,37 @@ use Throwable;
 final class CustomItemManager{
 	use SingletonTrait;
 
-	/** @var Item[] */
-	protected array $registered = [];
+	private static int $runtimeId = -1;
 
-	protected ItemComponentPacket $packet;
+	private ItemComponentPacket $packet;
 
-	protected ReflectionProperty $coreToNetMap;
+	private ReflectionProperty $coreToNetMap;
 
-	protected ReflectionProperty $netToCoreMap;
+	private ReflectionProperty $netToCoreMap;
 
-	protected array $coreToNetValues = [];
+	private array $coreToNetValues;
 
-	protected array $netToCoreValues = [];
+	private array $netToCoreValues;
 
-	protected ReflectionProperty $itemTypeMap;
+	private ReflectionProperty $itemTypeMap;
 
-	/** @var ItemComponentPacketEntry[] */
-	protected array $packetEntries = [];
-	/** @var ItemTypeEntry[] */
-	protected array $itemTypeEntries = [];
+	/**
+	 * @phpstan-var array<int, ItemComponentPacketEntry>
+	 * @var ItemComponentPacketEntry[]
+	 */
+	private array $packetEntries;
+
+	/**
+	 * @phpstan-var array<int, ItemTypeEntry>
+	 * @var ItemTypeEntry[]
+	 */
+	private array $itemTypeEntries;
+
+	/**
+	 * @phpstan-var array<int, CustomItem> TypeId => CustomItem
+	 * @var CustomItem[]
+	 */
+	private array $registered = [];
 
 	public function __construct(){
 		$ref = new ReflectionClass(ItemTypeDictionary::class);
@@ -82,6 +94,18 @@ final class CustomItemManager{
 		$this->packetEntries = [];
 
 		$this->packet = ItemComponentPacket::create($this->packetEntries);
+
+		$this->refreshRuntimeId();
+	}
+
+	public static function nextRuntimeId(): int{
+		return self::$runtimeId;
+	}
+
+	private function refreshRuntimeId(): void{
+		while(isset($this->netToCoreValues[self::$runtimeId])){
+			self::$runtimeId++;
+		}
 	}
 
 	public function getItems() : array{
@@ -89,12 +113,7 @@ final class CustomItemManager{
 	}
 
 	public function isCustomItem(Item $item) : bool{
-		foreach($this->registered as $other){
-			if($item->equals($other, false, false)){
-				return true;
-			}
-		}
-		return false;
+		return isset($this->registered[$item->getTypeId()]);
 	}
 
 	/**
@@ -113,7 +132,7 @@ final class CustomItemManager{
 
 			$this->packetEntries[] = new ItemComponentPacketEntry($namespace, new CacheableNbt($properties->getNbt()));
 
-			$this->registered[] = $item;
+			$this->registered[$item->getTypeId()] = $item;
 
 			$new = clone $item;
 
@@ -129,6 +148,7 @@ final class CustomItemManager{
 			throw new \InvalidArgumentException("Failed to register item: " . $e->getMessage(), $e->getLine(), $e);
 		}
 		$this->refresh();
+		$this->refreshRuntimeId();
 	}
 
 	private function refresh() : void{

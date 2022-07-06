@@ -18,11 +18,11 @@ declare(strict_types=1);
 
 namespace alvin0319\CustomItemLoader\item\properties;
 
+use alvin0319\CustomItemLoader\CustomItemManager;
 use InvalidArgumentException;
 use pocketmine\block\BlockToolType;
 use pocketmine\inventory\ArmorInventory;
 use pocketmine\item\Item;
-use pocketmine\item\ItemFactory;
 use pocketmine\item\ItemTypeIds;
 use pocketmine\item\VanillaItems;
 use pocketmine\nbt\tag\CompoundTag;
@@ -34,64 +34,58 @@ use function in_array;
 use function is_numeric;
 
 final class CustomItemProperties{
-	/** @var string */
-	protected string $name;
-	/** @var int */
-	protected int $meta;
-	/** @var string */
-	protected string $namespace;
-	/** @var int */
-	protected int $runtimeId;
-	/** @var bool */
-	protected bool $durable = false;
-	/** @var int|null */
-	protected ?int $max_durability = null;
-	/** @var bool */
-	protected bool $allow_off_hand = false;
-	/** @var bool */
-	protected bool $can_destroy_in_creative = false;
-	/** @var int */
-	protected int $creative_category = 1;
-	/** @var bool */
-	protected bool $hand_equipped = true;
-	/** @var int */
-	protected int $max_stack_size = 64;
-	/** @var float */
-	protected float $mining_speed = 1;
-	/** @var bool */
-	protected bool $food = false;
-	/** @var bool */
-	protected bool $can_always_eat = false;
-	/** @var int|null */
-	protected ?int $nutrition = null;
-	/** @var float|null */
-	protected ?float $saturation = null;
-	/** @var Item|null */
-	protected ?Item $residue = null;
-	/** @var bool */
-	protected bool $armor = false;
-	/** @var int */
-	protected int $defence_points;
-	/** @var CompoundTag */
-	protected CompoundTag $nbt;
-	/** @var bool */
-	protected bool $isBlock = false;
-	/** @var int */
-	protected int $blockId;
-	/** @var bool */
-	protected bool $tool = false;
-	/** @var int */
-	protected int $toolType = BlockToolType::NONE;
-	/** @var int */
-	protected int $toolTier = 0;
 
-	protected bool $add_creative_inventory = false;
+	private string $name;
 
-	protected int $attack_points = 0;
+	private int $meta;
 
-	protected int $foil;
+	private string $namespace;
 
-	protected int $armorSlot = ArmorInventory::SLOT_HEAD;
+	private int $runtimeId;
+
+	private bool $durable = false;
+
+	private ?int $max_durability = null;
+
+	private bool $allow_off_hand = false;
+
+	private bool $can_destroy_in_creative = false;
+
+	private int $creative_category = 1;
+
+	private bool $hand_equipped = true;
+
+	private int $max_stack_size = 64;
+
+	private float $mining_speed = 1;
+
+	private bool $food = false;
+
+	private bool $can_always_eat = false;
+
+	private ?int $nutrition = null;
+
+	private ?float $saturation = null;
+
+	private ?Item $residue = null;
+
+	private bool $armor = false;
+
+	private int $defence_points;
+
+	private bool $tool = false;
+
+	private int $toolType = BlockToolType::NONE;
+
+	private int $toolTier = 0;
+
+	private bool $add_creative_inventory = false;
+
+	private int $attack_points = 0;
+
+	private int $foil;
+
+	private int $armorSlot = ArmorInventory::SLOT_HEAD;
 
 	private int $cooldown = 0;
 
@@ -119,7 +113,7 @@ final class CustomItemProperties{
 
 		$namespace = (string) $data["namespace"];
 
-		$runtimeId = $id + ($id > 0 ? 5000 : -5000);
+		$runtimeId = CustomItemManager::nextRuntimeId();
 
 		$this->typeId = (int)$data["type_id"];
 		$this->runtimeId = $runtimeId;
@@ -736,6 +730,9 @@ final class CustomItemProperties{
 	private function buildBaseComponent(string $texture, string $namespace, int $runtimeId, string $name) : void{
 		$this->nbt = CompoundTag::create()
 			->setTag("components", CompoundTag::create()
+				->setTag("minecraft:display_name", CompoundTag::create()
+					->setString("value", $name)
+				)
 				->setTag("item_properties", CompoundTag::create()
 					->setInt("use_duration", 32)
 					->setTag("minecraft:icon", CompoundTag::create()
@@ -744,9 +741,6 @@ final class CustomItemProperties{
 					)
 				)
 			)
-			->setShort("minecraft:identifier", $runtimeId)
-			->setTag("minecraft:display_name", CompoundTag::create()
-				->setString("value", $name)
-			);
+			->setShort("minecraft:identifier", $runtimeId);
 	}
 }
