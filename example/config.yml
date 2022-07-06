@@ -1,7 +1,6 @@
 items:
   facebook:
     type_id: 20230
-    id: 1001
     meta: 0
     namespace: "custom:facebook"
     name: facebook

@@ -37,8 +37,6 @@ final class CustomItemProperties{
 	/** @var string */
 	protected string $name;
 	/** @var int */
-	protected int $id;
-	/** @var int */
 	protected int $meta;
 	/** @var string */
 	protected string $namespace;
@@ -108,9 +106,6 @@ final class CustomItemProperties{
 		if(!isset($data["type_id"])){
 			throw new InvalidArgumentException("type_id is required");
 		}
-		if(!isset($data["id"])){
-			throw new InvalidArgumentException("id is required");
-		}
 		if(!isset($data["meta"])){
 			throw new InvalidArgumentException("meta is required");
 		}
@@ -120,7 +115,6 @@ final class CustomItemProperties{
 		if(!isset($data["texture"])){
 			throw new InvalidArgumentException("texture is required");
 		}
-		$id = (int) $data["id"];
 		$meta = (int) $data["meta"];
 
 		$namespace = (string) $data["namespace"];
@@ -128,7 +122,6 @@ final class CustomItemProperties{
 		$runtimeId = $id + ($id > 0 ? 5000 : -5000);
 
 		$this->typeId = (int)$data["type_id"];
-		$this->id = $id;
 		$this->runtimeId = $runtimeId;
 		$this->meta = $meta;
 		$this->namespace = $namespace;
@@ -217,10 +210,6 @@ final class CustomItemProperties{
 
 	public function getNamespace() : string{
 		return $this->namespace;
-	}
-
-	public function getId() : int{
-		return $this->id;
 	}
 
 	public function getMeta() : int{
