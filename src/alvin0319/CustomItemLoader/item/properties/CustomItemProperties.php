@@ -734,6 +734,9 @@ final class CustomItemProperties{
 	private function buildBaseComponent(string $texture, string $namespace, int $runtimeId, string $name) : void{
 		$this->nbt = CompoundTag::create()
 			->setTag("components", CompoundTag::create()
+				->setTag("minecraft:display_name", CompoundTag::create()
+					->setString("value", $name)
+				)
 				->setTag("item_properties", CompoundTag::create()
 					->setInt("use_duration", 32)
 					->setTag("minecraft:icon", CompoundTag::create()
@@ -743,8 +746,5 @@ final class CustomItemProperties{
 				)
 			)
 			->setShort("minecraft:identifier", $runtimeId)
-			->setTag("minecraft:display_name", CompoundTag::create()
-				->setString("value", $name)
-			);
 	}
 }
