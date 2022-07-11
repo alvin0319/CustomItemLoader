@@ -745,6 +745,6 @@ final class CustomItemProperties{
 					)
 				)
 			)
-			->setShort("minecraft:identifier", $runtimeId)
+			->setShort("minecraft:identifier", $runtimeId);
 	}
 }
