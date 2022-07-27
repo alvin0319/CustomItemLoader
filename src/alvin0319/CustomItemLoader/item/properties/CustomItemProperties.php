@@ -161,7 +161,7 @@ final class CustomItemProperties{
 			if(!isset($data["defence_points"]) || !isset($data["armor_slot"]) || !isset($data["armor_class"])){
 				throw new InvalidArgumentException("Armor item must have defence_points, armor_slot, and armor_class");
 			}
-            $this->setArmor(true, $data["armor_class"], $data["armor_slot"]);
+			$this->setArmor(true, $data["armor_class"], $data["armor_slot"]);
 			$this->setDefencePoints($data["defence_points"]);
 		}
 		if(isset($data["foil"])){
