@@ -427,6 +427,7 @@ final class CustomItemProperties{
 			"boots" => ArmorInventory::SLOT_FEET,
 			default => throw new InvalidArgumentException("Unknown armor slot $armorSlot given.")
 		};
+		$this->setArmorSlot($armor_slot_int);
 
 		static $acceptedArmorValues = ["gold", "none", "leather", "chain", "iron", "diamond", "elytra", "turtle", "netherite"];
 
