@@ -28,7 +28,7 @@ class CustomArmorItem extends Armor{
 
 	public function __construct(string $name, CustomItemProperties $properties){
 		$this->properties = $properties;
-		parent::__construct(new ItemIdentifier($this->properties->getId(), $this->properties->getMeta()), $this->properties->getName(), new ArmorTypeInfo(
+		parent::__construct(new ItemIdentifier($this->properties->getId()), $this->properties->getName(), new ArmorTypeInfo(
 			$this->properties->getDefencePoints(),
 			$this->properties->getMaxDurability(),
 			$this->properties->getArmorSlot()

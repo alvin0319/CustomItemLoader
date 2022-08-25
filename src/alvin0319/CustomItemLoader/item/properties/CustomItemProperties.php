@@ -23,6 +23,7 @@ use pocketmine\block\BlockToolType;
 use pocketmine\inventory\ArmorInventory;
 use pocketmine\item\Item;
 use pocketmine\item\ItemFactory;
+use pocketmine\item\ItemTypeIds;
 use pocketmine\nbt\tag\CompoundTag;
 use pocketmine\nbt\tag\FloatTag;
 use pocketmine\nbt\tag\ListTag;
@@ -36,8 +37,6 @@ final class CustomItemProperties{
 	protected string $name;
 	/** @var int */
 	protected int $id;
-	/** @var int */
-	protected int $meta;
 	/** @var string */
 	protected string $namespace;
 	/** @var int */
@@ -101,20 +100,13 @@ final class CustomItemProperties{
 	}
 
 	private function parseData(array $data) : void{
-		if(!isset($data["id"])){
-			throw new InvalidArgumentException("id is required");
-		}
-		if(!isset($data["meta"])){
-			throw new InvalidArgumentException("meta is required");
-		}
 		if(!isset($data["namespace"])){
 			throw new InvalidArgumentException("namespace is required");
 		}
 		if(!isset($data["texture"])){
 			throw new InvalidArgumentException("texture is required");
 		}
-		$id = (int) $data["id"];
-		$meta = (int) $data["meta"];
+		$id = ItemTypeIds::newId();
 
 		$namespace = (string) $data["namespace"];
 
@@ -122,7 +114,6 @@ final class CustomItemProperties{
 
 		$this->id = $id;
 		$this->runtimeId = $runtimeId;
-		$this->meta = $meta;
 		$this->namespace = $namespace;
 
 		$this->buildBaseComponent($data["texture"], $namespace, $runtimeId, $this->name);
@@ -154,7 +145,7 @@ final class CustomItemProperties{
 		}
 
 		if(isset($data["residue"])){
-			$this->setResidue(ItemFactory::getInstance()->get((int) $data["residue"]["id"], (int) ($data["residue"]["meta"] ?? 0)));
+//			$this->setResidue(ItemFactory::getInstance()->get((int) $data["residue"]["id"], (int) ($data["residue"]["meta"] ?? 0)));
 		}
 
 		if(isset($data["armor"]) && $data["armor"]){
@@ -208,10 +199,6 @@ final class CustomItemProperties{
 
 	public function getId() : int{
 		return $this->id;
-	}
-
-	public function getMeta() : int{
-		return $this->meta;
 	}
 
 	public function getRuntimeId() : int{

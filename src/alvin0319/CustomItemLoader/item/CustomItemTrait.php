@@ -27,7 +27,7 @@ trait CustomItemTrait{
 
 	public function __construct(string $name, CustomItemProperties $properties){
 		$this->properties = $properties;
-		parent::__construct(new ItemIdentifier($this->properties->getId(), $this->properties->getMeta()), $this->properties->getName());
+		parent::__construct(new ItemIdentifier($this->properties->getId()), $this->properties->getName());
 	}
 
 	public function getProperties() : CustomItemProperties{
