@@ -20,6 +20,7 @@ namespace alvin0319\CustomItemLoader\item\properties;
 
 use InvalidArgumentException;
 use pocketmine\block\BlockToolType;
+use pocketmine\data\bedrock\item\upgrade\LegacyItemIdToStringIdMap;
 use pocketmine\inventory\ArmorInventory;
 use pocketmine\item\Item;
 use pocketmine\item\ItemFactory;
@@ -106,6 +107,7 @@ final class CustomItemProperties{
 		if(!isset($data["texture"])){
 			throw new InvalidArgumentException("texture is required");
 		}
+
 		$id = ItemTypeIds::newId();
 
 		$namespace = (string) $data["namespace"];
@@ -186,6 +188,12 @@ final class CustomItemProperties{
 		}
 		if(isset($data["cooldown"]) && is_numeric($data["cooldown"])){
 			$this->setCooldown($data["cooldown"]);
+		}
+
+		$legacyId = $data["id"] ?? -1;
+
+		if($legacyId !== -1){
+			LegacyItemIdToStringIdMap::getInstance()->add($this->namespace, $legacyId);
 		}
 	}
 
