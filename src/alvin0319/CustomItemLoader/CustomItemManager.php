@@ -52,6 +52,7 @@ final class CustomItemManager{
 
 	protected ReflectionProperty $netToCoreMap;
 
+	/** @var array<int, array<int, int>> */
 	protected array $coreToNetValues = [];
 
 	protected array $netToCoreValues = [];
@@ -105,8 +106,10 @@ final class CustomItemManager{
 			$id = $item->getProperties()->getId();
 			$runtimeId = $item->getProperties()->getRuntimeId();
 
-			$this->coreToNetValues[$id] = $runtimeId;
-			$this->netToCoreValues[$runtimeId] = $id;
+			foreach(GlobalItemTypeDictionary::getInstance()->getDictionaries() as $protocolId => $dictionary){
+				$this->coreToNetValues[$protocolId][$id] = $runtimeId;
+				$this->netToCoreValues[$protocolId][$runtimeId] = $id;
+			}
 
 			$this->itemTypeEntries[] = new ItemTypeEntry($item->getProperties()->getNamespace(), $runtimeId, true);
 
