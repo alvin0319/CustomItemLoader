@@ -51,6 +51,7 @@ class CustomItemLoader extends PluginBase{
 			CustomItemManager::getInstance()->registerDefaultItems($this->getConfig()->get("items", []));
 		}catch(\Throwable $e){
 			$this->getLogger()->critical("Failed to load custom items: " . $e->getMessage() . ", disabling plugin to prevent any unintended behaviour...");
+			$this->getLogger()->logException($e);
 			$this->getServer()->getPluginManager()->disablePlugin($this);
 			return;
 		}
