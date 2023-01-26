@@ -124,7 +124,6 @@ final class CustomItemManager{
 		}catch(Throwable $e){
 			throw new \InvalidArgumentException("Failed to register item: " . $e->getMessage(), $e->getLine(), $e);
 		}
-		$this->refresh();
 	}
 
 	private function refresh() : void{
@@ -146,6 +145,7 @@ final class CustomItemManager{
 		foreach($data as $name => $itemData){
 			$this->registerItem(self::getItem($name, $itemData));
 		}
+		$this->refresh();
 	}
 
 	public static function getItem(string $name, array $data) : Item{
