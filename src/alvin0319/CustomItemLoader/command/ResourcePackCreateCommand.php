@@ -130,6 +130,7 @@ class ResourcePackCreateCommand extends Command implements PluginOwned{
 				}
 				if(!is_dir($pathDir = Path::join(CustomItemLoader::getInstance()->getResourcePackFolder(), $pack_name))){
 					$sender->sendMessage("Resource pack \"$pack_name\" is not found");
+					return false;
 				}
 				$file = file_get_contents($path = Path::join($pathDir, 'texts', 'en_US.lang'));
 				$parsed = $this->parseLang($file);

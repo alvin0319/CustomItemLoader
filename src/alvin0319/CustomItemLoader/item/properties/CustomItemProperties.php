@@ -154,7 +154,7 @@ final class CustomItemProperties{
 			if(!isset($data["defence_points"]) || !isset($data["armor_slot"]) || !isset($data["armor_class"])){
 				throw new InvalidArgumentException("Armor item must have defence_points, armor_slot, and armor_class");
 			}
-			$this->setArmor(true, $data["armor_slot"], $data["armor_class"]);
+			$this->setArmor(true, $data["armor_class"], $data["armor_slot"]);
 			$this->setDefencePoints($data["defence_points"]);
 		}
 		if(isset($data["foil"])){
@@ -422,6 +422,7 @@ final class CustomItemProperties{
 			"boots" => ArmorInventory::SLOT_FEET,
 			default => throw new InvalidArgumentException("Unknown armor slot $armorSlot given.")
 		};
+		$this->setArmorSlot($armor_slot_int);
 
 		static $acceptedArmorValues = ["gold", "none", "leather", "chain", "iron", "diamond", "elytra", "turtle", "netherite"];
 
@@ -729,6 +730,9 @@ final class CustomItemProperties{
 	private function buildBaseComponent(string $texture, string $namespace, int $runtimeId, string $name) : void{
 		$this->nbt = CompoundTag::create()
 			->setTag("components", CompoundTag::create()
+				->setTag("minecraft:display_name", CompoundTag::create()
+					->setString("value", $name)
+				)
 				->setTag("item_properties", CompoundTag::create()
 					->setInt("use_duration", 32)
 					->setTag("minecraft:icon", CompoundTag::create()
@@ -737,9 +741,6 @@ final class CustomItemProperties{
 					)
 				)
 			)
-			->setShort("minecraft:identifier", $runtimeId)
-			->setTag("minecraft:display_name", CompoundTag::create()
-				->setString("value", $name)
-			);
+			->setShort("minecraft:identifier", $runtimeId);
 	}
 }
