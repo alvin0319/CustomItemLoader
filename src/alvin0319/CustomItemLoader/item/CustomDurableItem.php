@@ -29,11 +29,11 @@ class CustomDurableItem extends Durable{
 		return $this->getProperties()->getMaxDurability();
 	}
 
-	public function onDestroyBlock(Block $block) : bool{
+	public function onDestroyBlock(Block $block, array &$returnedItems) : bool{
 		return $this->applyDamage(1);
 	}
 
-	public function onAttackEntity(Entity $victim) : bool{
+	public function onAttackEntity(Entity $victim, array &$returnedItems) : bool{
 		return $this->applyDamage(1);
 	}
 }
