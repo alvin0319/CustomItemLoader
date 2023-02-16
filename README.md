@@ -3,6 +3,8 @@ Plugin for PocketMine-MP that makes your custom item with the full feature!
 
 <a href="https://poggit.pmmp.io/p/CustomItemLoader"><img src="https://poggit.pmmp.io/shield.state/CustomItemLoader"></a><a href="https://poggit.pmmp.io/p/CustomItemLoader"><img src="https://poggit.pmmp.io/shield.dl/CustomItemLoader"></a>
 
+#### Looking for support for NetherGames-fork? Check [this branch](https://github.com/alvin0319/CustomItemLoader/tree/ng). but Note that I don't provide full support for this fork.
+
 ## Reference
 All of these components were came from MCPE addon document and [wiki.vg](https://wiki.vg/Bedrock_Protocol)
 
