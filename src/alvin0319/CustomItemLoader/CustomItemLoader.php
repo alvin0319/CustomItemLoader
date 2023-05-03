@@ -18,7 +18,6 @@ declare(strict_types=1);
 
 namespace alvin0319\CustomItemLoader;
 
-use alvin0319\CustomItemLoader\command\CustomItemLoaderCommand;
 use alvin0319\CustomItemLoader\command\ResourcePackCreateCommand;
 use JackMD\UpdateNotifier\UpdateNotifier;
 use pocketmine\plugin\PluginBase;
@@ -28,6 +27,7 @@ use Symfony\Component\Filesystem\Path;
 use function class_exists;
 use function is_dir;
 use function mkdir;
+use function sprintf;
 
 class CustomItemLoader extends PluginBase{
 	use SingletonTrait;
@@ -68,7 +68,6 @@ class CustomItemLoader extends PluginBase{
 		}
 
 		$this->getServer()->getCommandMap()->registerAll("customitemloader", [
-			new CustomItemLoaderCommand(),
 			new ResourcePackCreateCommand()
 		]);
 	}

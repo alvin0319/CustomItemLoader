@@ -28,7 +28,6 @@ use alvin0319\CustomItemLoader\item\properties\CustomItemProperties;
 use alvin0319\libItemRegistrar\libItemRegistrar;
 use pocketmine\item\Item;
 use pocketmine\network\mcpe\convert\GlobalItemTypeDictionary;
-use pocketmine\network\mcpe\convert\ItemTranslator;
 use pocketmine\network\mcpe\protocol\ItemComponentPacket;
 use pocketmine\network\mcpe\protocol\types\CacheableNbt;
 use pocketmine\network\mcpe\protocol\types\ItemComponentPacketEntry;
@@ -97,11 +96,7 @@ final class CustomItemManager{
 		return clone $this->packet;
 	}
 
-	public function registerDefaultItems(array $data, bool $reload = false) : void{
-		if($reload){
-			ItemTranslator::reset();
-			GlobalItemTypeDictionary::reset();
-		}
+	public function registerDefaultItems(array $data) : void{
 		foreach($data as $name => $itemData){
 			$this->registerItem(self::getItem($name, $itemData));
 		}
