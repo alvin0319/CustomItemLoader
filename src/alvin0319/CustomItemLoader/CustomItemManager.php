@@ -48,9 +48,9 @@ final class CustomItemManager{
 
 	protected ItemComponentPacket $packet;
 
-	protected ReflectionProperty $coreToNetMap;
+	protected ReflectionProperty $simpleCoreToNetMapping;
 
-	protected ReflectionProperty $netToCoreMap;
+	protected ReflectionProperty $simpleNetToCoreMapping;
 
 	/** @var array<int, array<int, int>> */
 	protected array $coreToNetValues = [];
@@ -66,20 +66,21 @@ final class CustomItemManager{
 
 	public function __construct(){
 		$ref = new ReflectionClass(ItemTranslator::class);
-		$this->coreToNetMap = $ref->getProperty("simpleCoreToNetMapping");
-		$this->netToCoreMap = $ref->getProperty("simpleNetToCoreMapping");
-		$this->coreToNetMap->setAccessible(true);
-		$this->netToCoreMap->setAccessible(true);
+		$this->simpleCoreToNetMapping = $ref->getProperty("simpleCoreToNetMapping");
+		$this->simpleNetToCoreMapping = $ref->getProperty("simpleNetToCoreMapping");
 
-		$this->coreToNetValues = $this->coreToNetMap->getValue(ItemTranslator::getInstance());
-		$this->netToCoreValues = $this->netToCoreMap->getValue(ItemTranslator::getInstance());
+		$this->simpleCoreToNetMapping->setAccessible(true);
+		$this->simpleNetToCoreMapping->setAccessible(true);
 
+		$this->coreToNetValues = $this->simpleCoreToNetMapping->getValue(ItemTranslator::getInstance());
+		$this->netToCoreValues = $this->simpleNetToCoreMapping->getValue(ItemTranslator::getInstance());
 		$ref_1 = new ReflectionClass(ItemTypeDictionary::class);
 		$this->itemTypeMap = $ref_1->getProperty("itemTypes");
 		$this->itemTypeMap->setAccessible(true);
 
-		$this->itemTypeEntries = $this->itemTypeMap->getValue(GlobalItemTypeDictionary::getInstance()->getDictionary());
-
+		foreach(GlobalItemTypeDictionary::getInstance()->getDictionaries() as $protocolId => $dictionary) {
+			$this->itemTypeEntries[$protocolId] = $this->itemTypeMap->getValue(GlobalItemTypeDictionary::getInstance()->getDictionary());
+		}
 		$this->packetEntries = [];
 
 		$this->packet = ItemComponentPacket::create($this->packetEntries);
@@ -109,9 +110,8 @@ final class CustomItemManager{
 			foreach(GlobalItemTypeDictionary::getInstance()->getDictionaries() as $protocolId => $dictionary){
 				$this->coreToNetValues[$protocolId][$id] = $runtimeId;
 				$this->netToCoreValues[$protocolId][$runtimeId] = $id;
+				$this->itemTypeEntries[$protocolId][] = new ItemTypeEntry($item->getProperties()->getNamespace(), $runtimeId, true);
 			}
-
-			$this->itemTypeEntries[] = new ItemTypeEntry($item->getProperties()->getNamespace(), $runtimeId, true);
 
 			$this->packetEntries[] = new ItemComponentPacketEntry($item->getProperties()->getNamespace(), new CacheableNbt($item->getProperties()->getNbt()));
 
@@ -131,9 +131,11 @@ final class CustomItemManager{
 	}
 
 	private function refresh() : void{
-		$this->netToCoreMap->setValue(ItemTranslator::getInstance(), $this->netToCoreValues);
-		$this->coreToNetMap->setValue(ItemTranslator::getInstance(), $this->coreToNetValues);
-		$this->itemTypeMap->setValue(GlobalItemTypeDictionary::getInstance()->getDictionary(), $this->itemTypeEntries);
+		$this->simpleNetToCoreMapping->setValue(ItemTranslator::getInstance(), $this->netToCoreValues);
+		$this->simpleCoreToNetMapping->setValue(ItemTranslator::getInstance(), $this->coreToNetValues);
+		foreach(GlobalItemTypeDictionary::getInstance()->getDictionaries() as $protocolId => $dictionary) {
+			$this->itemTypeMap->setValue($dictionary, $this->itemTypeEntries[$protocolId]);
+		}
 		$this->packet = ItemComponentPacket::create($this->packetEntries);
 	}
 
@@ -167,4 +169,5 @@ final class CustomItemManager{
 		}
 		return new CustomItem($name, $prop);
 	}
+
 }
