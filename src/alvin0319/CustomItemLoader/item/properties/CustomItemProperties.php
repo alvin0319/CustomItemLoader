@@ -144,9 +144,10 @@ final class CustomItemProperties{
 		if(isset($data["can_destroy_in_creative"]) && $data["can_destroy_in_creative"] === true){
 			$itemPropertiesComponent->addComponent("can_destroy_in_creative", $trueTag);
 		}
-//		if(isset($data["creative_category"])){
+		if(isset($data["creative_category"])){
+			$itemPropertiesComponent->addComponent("creative_category", new IntTag($data["creative_category"]));
 //			$this->setCreativeCategory($data["creative_category"]);
-//		}
+		}
 		$handEquipped = false;
 		if(isset($data["hand_equipped"])){
 			$handEquipped = true;
