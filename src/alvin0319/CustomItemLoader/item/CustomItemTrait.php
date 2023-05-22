@@ -50,11 +50,9 @@ trait CustomItemTrait{
 		return $this->properties->getBlockToolHarvestLevel();
 	}
 
+	// TODO: This needs to be fixed in order to display break progress correctly.
 	public function getMiningEfficiency(bool $isCorrectTool) : float{
-		if($isCorrectTool){
-			return $this->properties->getMiningSpeed();
-		}
-		return parent::getMiningEfficiency(false);
+		return $this->properties->getMiningSpeed();
 	}
 
 	public function getMaxStackSize() : int{

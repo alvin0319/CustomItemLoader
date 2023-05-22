@@ -16,20 +16,7 @@
 
 declare(strict_types=1);
 
-namespace alvin0319\CustomItemLoader\item;
+namespace alvin0319\CustomItemLoader\util;
 
-use pocketmine\item\Tool;
-
-final class CustomToolItem extends Tool{
-	use CustomItemTrait {
-		getMiningEfficiency as customGetMiningEfficiency;
-	}
-
-	public function getMaxDurability() : int{
-		return $this->properties->getMaxDurability();
-	}
-
-	protected function getBaseMiningEfficiency() : float{
-		return $this->customGetMiningEfficiency(true);
-	}
+final class InvalidNBTStateException extends \RuntimeException{
 }

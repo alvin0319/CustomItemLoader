@@ -16,20 +16,28 @@
 
 declare(strict_types=1);
 
-namespace alvin0319\CustomItemLoader\item;
+namespace alvin0319\CustomItemLoader\item\properties\component;
 
-use pocketmine\item\Tool;
+use pocketmine\nbt\tag\CompoundTag;
 
-final class CustomToolItem extends Tool{
-	use CustomItemTrait {
-		getMiningEfficiency as customGetMiningEfficiency;
+/**
+ * Base class for components.
+ */
+abstract class Component{
+
+	public const TAG_COMPONENTS = "components";
+
+	abstract public function getName() : string;
+
+	/**
+	 * Builds the basic component tree which will be used to process the component.
+	 */
+	public function buildComponent(CompoundTag $rootNBT) : void{
 	}
 
-	public function getMaxDurability() : int{
-		return $this->properties->getMaxDurability();
-	}
-
-	protected function getBaseMiningEfficiency() : float{
-		return $this->customGetMiningEfficiency(true);
-	}
+	/**
+	 * Processes the component.
+	 * This method assumes the component tree is already built.
+	 */
+	abstract public function processComponent(CompoundTag $rootNBT) : void;
 }
