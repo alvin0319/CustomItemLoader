@@ -37,6 +37,7 @@ use pocketmine\item\ItemTypeIds;
 use pocketmine\nbt\tag\ByteTag;
 use pocketmine\nbt\tag\CompoundTag;
 use pocketmine\nbt\tag\IntTag;
+use pocketmine\nbt\tag\StringTag;
 use function is_numeric;
 
 final class CustomItemProperties{
@@ -147,6 +148,9 @@ final class CustomItemProperties{
 		if(isset($data["creative_category"])){
 			$itemPropertiesComponent->addComponent("creative_category", new IntTag($data["creative_category"]));
 //			$this->setCreativeCategory($data["creative_category"]);
+		}
+		if(isset($data["creative_group"])){
+			$itemPropertiesComponent->addComponent("creative_group", new StringTag($data["creative_group"]));
 		}
 		$handEquipped = false;
 		if(isset($data["hand_equipped"])){
