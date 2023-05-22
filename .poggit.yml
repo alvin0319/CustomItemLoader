@@ -2,7 +2,7 @@
 build-by-default: true
 branches:
   - master
-  - pm4
+  - api/pm5
 projects:
   CustomItemLoader:
     path: ""
