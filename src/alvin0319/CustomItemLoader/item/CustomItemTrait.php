@@ -27,7 +27,7 @@ trait CustomItemTrait{
 
 	public function __construct(string $name, CustomItemProperties $properties){
 		$this->properties = $properties;
-		parent::__construct(new ItemIdentifier($this->properties->getId(), $this->properties->getMeta()), $this->properties->getName());
+		parent::__construct(new ItemIdentifier($this->properties->getId()), $this->properties->getName());
 	}
 
 	public function getProperties() : CustomItemProperties{
@@ -50,11 +50,9 @@ trait CustomItemTrait{
 		return $this->properties->getBlockToolHarvestLevel();
 	}
 
+	// TODO: This needs to be fixed in order to display break progress correctly.
 	public function getMiningEfficiency(bool $isCorrectTool) : float{
-		if($isCorrectTool){
-			return $this->properties->getMiningSpeed();
-		}
-		return parent::getMiningEfficiency(false);
+		return $this->properties->getMiningSpeed();
 	}
 
 	public function getMaxStackSize() : int{

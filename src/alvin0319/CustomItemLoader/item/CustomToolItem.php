@@ -21,9 +21,15 @@ namespace alvin0319\CustomItemLoader\item;
 use pocketmine\item\Tool;
 
 final class CustomToolItem extends Tool{
-	use CustomItemTrait;
+	use CustomItemTrait {
+		getMiningEfficiency as customGetMiningEfficiency;
+	}
 
 	public function getMaxDurability() : int{
 		return $this->properties->getMaxDurability();
+	}
+
+	protected function getBaseMiningEfficiency() : float{
+		return $this->customGetMiningEfficiency(true);
 	}
 }

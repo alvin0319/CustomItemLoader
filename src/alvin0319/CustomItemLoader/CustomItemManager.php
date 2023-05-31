@@ -25,18 +25,14 @@ use alvin0319\CustomItemLoader\item\CustomItem;
 use alvin0319\CustomItemLoader\item\CustomItemTrait;
 use alvin0319\CustomItemLoader\item\CustomToolItem;
 use alvin0319\CustomItemLoader\item\properties\CustomItemProperties;
+use alvin0319\libItemRegistrar\libItemRegistrar;
 use pocketmine\item\Item;
-use pocketmine\item\ItemFactory;
-use pocketmine\item\StringToItemParser;
 use pocketmine\network\mcpe\convert\GlobalItemTypeDictionary;
-use pocketmine\network\mcpe\convert\ItemTranslator;
 use pocketmine\network\mcpe\protocol\ItemComponentPacket;
-use pocketmine\network\mcpe\protocol\serializer\ItemTypeDictionary;
 use pocketmine\network\mcpe\protocol\types\CacheableNbt;
 use pocketmine\network\mcpe\protocol\types\ItemComponentPacketEntry;
 use pocketmine\network\mcpe\protocol\types\ItemTypeEntry;
 use pocketmine\utils\SingletonTrait;
-use ReflectionClass;
 use ReflectionProperty;
 use Throwable;
 
@@ -44,44 +40,18 @@ final class CustomItemManager{
 	use SingletonTrait;
 
 	/** @var Item[] */
-	protected array $registered = [];
+	private array $registered = [];
 
-	protected ItemComponentPacket $packet;
+	private ItemComponentPacket $packet;
 
-	protected ReflectionProperty $coreToNetMap;
-
-	protected ReflectionProperty $netToCoreMap;
-
-	protected array $coreToNetValues = [];
-
-	protected array $netToCoreValues = [];
-
-	protected ReflectionProperty $itemTypeMap;
+	private ReflectionProperty $itemTypeMap;
 
 	/** @var ItemComponentPacketEntry[] */
-	protected array $packetEntries = [];
+	private array $packetEntries = [];
 	/** @var ItemTypeEntry[] */
-	protected array $itemTypeEntries = [];
+	private array $itemTypeEntries = [];
 
 	public function __construct(){
-		$ref = new ReflectionClass(ItemTranslator::class);
-		$this->coreToNetMap = $ref->getProperty("simpleCoreToNetMapping");
-		$this->netToCoreMap = $ref->getProperty("simpleNetToCoreMapping");
-		$this->coreToNetMap->setAccessible(true);
-		$this->netToCoreMap->setAccessible(true);
-
-		$this->coreToNetValues = $this->coreToNetMap->getValue(ItemTranslator::getInstance());
-		$this->netToCoreValues = $this->netToCoreMap->getValue(ItemTranslator::getInstance());
-
-		$ref_1 = new ReflectionClass(ItemTypeDictionary::class);
-		$this->itemTypeMap = $ref_1->getProperty("itemTypes");
-		$this->itemTypeMap->setAccessible(true);
-
-		$this->itemTypeEntries = $this->itemTypeMap->getValue(GlobalItemTypeDictionary::getInstance()->getDictionary());
-
-		$this->packetEntries = [];
-
-		$this->packet = ItemComponentPacket::create($this->packetEntries);
 	}
 
 	public function getItems() : array{
@@ -102,11 +72,7 @@ final class CustomItemManager{
 	 */
 	public function registerItem($item) : void{
 		try{
-			$id = $item->getProperties()->getId();
 			$runtimeId = $item->getProperties()->getRuntimeId();
-
-			$this->coreToNetValues[$id] = $runtimeId;
-			$this->netToCoreValues[$runtimeId] = $id;
 
 			$this->itemTypeEntries[] = new ItemTypeEntry($item->getProperties()->getNamespace(), $runtimeId, true);
 
@@ -116,20 +82,13 @@ final class CustomItemManager{
 
 			$new = clone $item;
 
-			if(StringToItemParser::getInstance()->parse($item->getProperties()->getName()) === null){
-				StringToItemParser::getInstance()->register($item->getProperties()->getName(), fn() => $new);
-			}
-
-			ItemFactory::getInstance()->register($item, true);
+			libItemRegistrar::getInstance()->registerItem($new, $runtimeId, true, $item->getProperties()->getNamespace());
 		}catch(Throwable $e){
 			throw new \InvalidArgumentException("Failed to register item: " . $e->getMessage(), $e->getLine(), $e);
 		}
 	}
 
 	private function refresh() : void{
-		$this->netToCoreMap->setValue(ItemTranslator::getInstance(), $this->netToCoreValues);
-		$this->coreToNetMap->setValue(ItemTranslator::getInstance(), $this->coreToNetValues);
-		$this->itemTypeMap->setValue(GlobalItemTypeDictionary::getInstance()->getDictionary(), $this->itemTypeEntries);
 		$this->packet = ItemComponentPacket::create($this->packetEntries);
 	}
 
@@ -137,11 +96,7 @@ final class CustomItemManager{
 		return clone $this->packet;
 	}
 
-	public function registerDefaultItems(array $data, bool $reload = false) : void{
-		if($reload){
-			ItemTranslator::reset();
-			GlobalItemTypeDictionary::reset();
-		}
+	public function registerDefaultItems(array $data) : void{
 		foreach($data as $name => $itemData){
 			$this->registerItem(self::getItem($name, $itemData));
 		}

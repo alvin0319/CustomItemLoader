@@ -16,24 +16,28 @@
 
 declare(strict_types=1);
 
-namespace alvin0319\CustomItemLoader\item;
+namespace alvin0319\CustomItemLoader\item\properties\component;
 
-use pocketmine\block\Block;
-use pocketmine\entity\Entity;
-use pocketmine\item\Durable;
+use pocketmine\nbt\tag\CompoundTag;
 
-class CustomDurableItem extends Durable{
-	use CustomItemTrait;
+/**
+ * Base class for components.
+ */
+abstract class Component{
 
-	public function getMaxDurability() : int{
-		return $this->getProperties()->getMaxDurability();
+	public const TAG_COMPONENTS = "components";
+
+	abstract public function getName() : string;
+
+	/**
+	 * Builds the basic component tree which will be used to process the component.
+	 */
+	public function buildComponent(CompoundTag $rootNBT) : void{
 	}
 
-	public function onDestroyBlock(Block $block, array &$returnedItems) : bool{
-		return $this->applyDamage(1);
-	}
-
-	public function onAttackEntity(Entity $victim, array &$returnedItems) : bool{
-		return $this->applyDamage(1);
-	}
+	/**
+	 * Processes the component.
+	 * This method assumes the component tree is already built.
+	 */
+	abstract public function processComponent(CompoundTag $rootNBT) : void;
 }

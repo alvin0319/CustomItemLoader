@@ -18,17 +18,26 @@ declare(strict_types=1);
 
 namespace alvin0319\CustomItemLoader\item\properties;
 
+use alvin0319\CustomItemLoader\item\properties\component\ArmorComponent;
+use alvin0319\CustomItemLoader\item\properties\component\Component;
+use alvin0319\CustomItemLoader\item\properties\component\CooldownComponent;
+use alvin0319\CustomItemLoader\item\properties\component\DiggerComponent;
+use alvin0319\CustomItemLoader\item\properties\component\DisplayNameComponent;
+use alvin0319\CustomItemLoader\item\properties\component\DurableComponent;
+use alvin0319\CustomItemLoader\item\properties\component\FoodComponent;
+use alvin0319\CustomItemLoader\item\properties\component\IdentifierComponent;
+use alvin0319\CustomItemLoader\item\properties\component\ItemPropertiesComponent;
+use alvin0319\CustomItemLoader\item\properties\component\RenderOffsetsComponent;
 use InvalidArgumentException;
 use pocketmine\block\BlockToolType;
+use pocketmine\data\bedrock\item\upgrade\LegacyItemIdToStringIdMap;
 use pocketmine\inventory\ArmorInventory;
 use pocketmine\item\Item;
-use pocketmine\item\ItemFactory;
+use pocketmine\item\ItemTypeIds;
+use pocketmine\nbt\tag\ByteTag;
 use pocketmine\nbt\tag\CompoundTag;
-use pocketmine\nbt\tag\FloatTag;
-use pocketmine\nbt\tag\ListTag;
-use pocketmine\utils\AssumptionFailedError;
-use ReflectionClass;
-use function in_array;
+use pocketmine\nbt\tag\IntTag;
+use pocketmine\nbt\tag\StringTag;
 use function is_numeric;
 
 final class CustomItemProperties{
@@ -36,8 +45,6 @@ final class CustomItemProperties{
 	protected string $name;
 	/** @var int */
 	protected int $id;
-	/** @var int */
-	protected int $meta;
 	/** @var string */
 	protected string $namespace;
 	/** @var int */
@@ -72,8 +79,6 @@ final class CustomItemProperties{
 	protected bool $armor = false;
 	/** @var int */
 	protected int $defence_points;
-	/** @var CompoundTag */
-	protected CompoundTag $nbt;
 	/** @var bool */
 	protected bool $isBlock = false;
 	/** @var int */
@@ -95,26 +100,27 @@ final class CustomItemProperties{
 
 	private int $cooldown = 0;
 
+	/** @var Component[] */
+	private array $components = [];
+
+	private CompoundTag $rootNBT;
+
 	public function __construct(string $name, array $data){
 		$this->name = $name;
 		$this->parseData($data);
 	}
 
 	private function parseData(array $data) : void{
-		if(!isset($data["id"])){
-			throw new InvalidArgumentException("id is required");
-		}
-		if(!isset($data["meta"])){
-			throw new InvalidArgumentException("meta is required");
-		}
 		if(!isset($data["namespace"])){
 			throw new InvalidArgumentException("namespace is required");
 		}
 		if(!isset($data["texture"])){
 			throw new InvalidArgumentException("texture is required");
 		}
-		$id = (int) $data["id"];
-		$meta = (int) $data["meta"];
+		$this->rootNBT = CompoundTag::create()
+			->setTag(Component::TAG_COMPONENTS, CompoundTag::create());
+
+		$id = ItemTypeIds::newId();
 
 		$namespace = (string) $data["namespace"];
 
@@ -122,50 +128,72 @@ final class CustomItemProperties{
 
 		$this->id = $id;
 		$this->runtimeId = $runtimeId;
-		$this->meta = $meta;
 		$this->namespace = $namespace;
 
-		$this->buildBaseComponent($data["texture"], $namespace, $runtimeId, $this->name);
+		$this->addComponent(new IdentifierComponent($runtimeId));
+		$this->addComponent(new DisplayNameComponent($this->name));
 
-		if(isset($data["allow_off_hand"])){
-			$this->setAllowOffhand($data["allow_off_hand"]);
+		$itemPropertiesComponent = new ItemPropertiesComponent();
+		$itemPropertiesComponent->setIcon($data["texture"], $namespace);
+		$itemPropertiesComponent->addComponent(ItemPropertiesComponent::TAG_USE_DURATION, new IntTag(0));
+
+		$trueTag = new ByteTag(1);
+
+		if(isset($data["allow_off_hand"]) && $data["allow_off_hand"] === true){
+			$itemPropertiesComponent->addComponent("allow_off_hand", $trueTag);
 		}
-		if(isset($data["can_destroy_in_creative"])){
-			$this->setCanDestroyInCreative($data["can_destroy_in_creative"]);
+		if(isset($data["can_destroy_in_creative"]) && $data["can_destroy_in_creative"] === true){
+			$itemPropertiesComponent->addComponent("can_destroy_in_creative", $trueTag);
 		}
 		if(isset($data["creative_category"])){
-			$this->setCreativeCategory($data["creative_category"]);
+			$itemPropertiesComponent->addComponent("creative_category", new IntTag($data["creative_category"]));
+//			$this->setCreativeCategory($data["creative_category"]);
 		}
+		if(isset($data["creative_group"])){
+			$itemPropertiesComponent->addComponent("creative_group", new StringTag($data["creative_group"]));
+		}
+		$handEquipped = false;
 		if(isset($data["hand_equipped"])){
-			$this->setHandEquipped($data["hand_equipped"]);
+			$handEquipped = true;
+			$itemPropertiesComponent->addComponent("hand_equipped", $trueTag);
 		}
 		if(isset($data["max_stack_size"])){
-			$this->setMaxStackSize($data["max_stack_size"]);
+			$itemPropertiesComponent->addComponent("max_stack_size", new IntTag($data["max_stack_size"]));
 		}
-		if(isset($data["mining_speed"])){
-			$this->setMiningSpeed($data["mining_speed"]);
-		}
+//		if(isset($data["mining_speed"])){
+//			$this->setMiningSpeed($data["mining_speed"]);
+//		}
 
-		if(isset($data["food"]) && $data["food"]){
+		if(isset($data["food"]) && $data["food"] === true){
 			if(!isset($data["nutrition"]) || !isset($data["saturation"]) || !isset($data["can_always_eat"])){
 				throw new InvalidArgumentException("Food item must have nutrition, saturation, and can_always_eat");
 			}
-			$this->setFood($data["food"], $data["nutrition"], $data["saturation"], $data["can_always_eat"]);
+//			$this->setFood($data["food"], $data["nutrition"], $data["saturation"], $data["can_always_eat"]);
+			$this->addComponent(new FoodComponent($data["can_always_eat"], $data["nutrition"], $data["saturation"]));
 		}
 
-		if(isset($data["residue"])){
-			$this->setResidue(ItemFactory::getInstance()->get((int) $data["residue"]["id"], (int) ($data["residue"]["meta"] ?? 0)));
-		}
+//		if(isset($data["residue"])){
+//			$this->setResidue(ItemFactory::getInstance()->get((int) $data["residue"]["id"], (int) ($data["residue"]["meta"] ?? 0)));
+//		}
 
 		if(isset($data["armor"]) && $data["armor"]){
 			if(!isset($data["defence_points"]) || !isset($data["armor_slot"]) || !isset($data["armor_class"])){
 				throw new InvalidArgumentException("Armor item must have defence_points, armor_slot, and armor_class");
 			}
-			$this->setArmor(true, $data["armor_class"], $data["armor_slot"]);
-			$this->setDefencePoints($data["defence_points"]);
+//			$this->setArmor(true, $data["armor_class"], $data["armor_slot"]);
+//			$this->setDefencePoints($data["defence_points"]);
+			$armor_slot_int = match ($data["armor_slot"]) {
+				"helmet" => ArmorInventory::SLOT_HEAD,
+				"chest" => ArmorInventory::SLOT_CHEST,
+				"leggings" => ArmorInventory::SLOT_LEGS,
+				"boots" => ArmorInventory::SLOT_FEET,
+				default => throw new InvalidArgumentException("Unknown armor slot {$data["armor_slot"]} given.")
+			};
+			$this->addComponent(new ArmorComponent($data["armor_class"], $armor_slot_int)); // TODO: defence points
 		}
 		if(isset($data["foil"])){
-			$this->setFoil($data["foil"]);
+//			$this->setFoil($data["foil"]);
+			$itemPropertiesComponent->addComponent("foil", $trueTag);
 		}
 		if(isset($data["add_creative_inventory"])){
 			$this->setAddCreativeInventory($data["add_creative_inventory"]);
@@ -185,17 +213,47 @@ final class CustomItemProperties{
 			if(!isset($data["max_durability"])){
 				throw new InvalidArgumentException("Durable item must have max_durability");
 			}
-			$this->setDurable($data["durable"], $data["max_durability"]);
+//			$this->setDurable($data["durable"], $data["max_durability"]);
+			$this->addComponent(new DurableComponent($data["max_durability"]));
 		}
 		if(isset($data["render_offset"])){
-			if(!isset($data["render_offset"]["size"])){
-				throw new InvalidArgumentException("Render offset item must have size");
+			$x = 16;
+			$y = 16;
+			if(isset($data["render_offset"]["x"]) && isset($data["render_offset"]["y"])){
+				$x = $data["render_offset"]["x"];
+				$y = $data["render_offset"]["y"];
+			}elseif(isset($data["render_offset"]["size"])){
+				$x = $data["render_offset"]["size"];
+				$y = $data["render_offset"]["size"];
 			}
-			$this->setRenderOffsets($data["render_offset"]["size"]);
+			$this->addComponent(new RenderOffsetsComponent($x, $y, $handEquipped));
 		}
 		if(isset($data["cooldown"]) && is_numeric($data["cooldown"])){
-			$this->setCooldown($data["cooldown"]);
+//			$this->setCooldown($data["cooldown"]);
+			$this->addComponent(new CooldownComponent($data["cooldown"]));
 		}
+
+		if(isset($data["dig"])){
+			if(!isset($data["dig"]["block_tags"]) || !isset($data["dig"]["speed"])){
+				throw new InvalidArgumentException("Property 'dig' must have block_tags and speed");
+			}
+			$this->addComponent(new DiggerComponent((int) $data["dig"]["speed"], $data["dig"]["block_tags"]));
+			$this->mining_speed = (int) $data["dig"]["speed"];
+		}
+
+		$this->addComponent($itemPropertiesComponent);
+
+		$legacyId = $data["id"] ?? -1;
+
+		if($legacyId !== -1){
+			LegacyItemIdToStringIdMap::getInstance()->add($this->namespace, $legacyId);
+		}
+	}
+
+	public function addComponent(Component $component) : void{
+		$this->components[$component->getName()] = $component;
+		$component->buildComponent($this->rootNBT);
+		$component->processComponent($this->rootNBT);
 	}
 
 	public function getName() : string{
@@ -208,10 +266,6 @@ final class CustomItemProperties{
 
 	public function getId() : int{
 		return $this->id;
-	}
-
-	public function getMeta() : int{
-		return $this->meta;
 	}
 
 	public function getRuntimeId() : int{
@@ -298,10 +352,6 @@ final class CustomItemProperties{
 		return $this->attack_points;
 	}
 
-	public function getNbt() : CompoundTag{
-		return $this->nbt;
-	}
-
 	public function getArmorSlot() : int{
 		return $this->armorSlot;
 	}
@@ -312,296 +362,6 @@ final class CustomItemProperties{
 
 	public function getFoil() : bool{
 		return $this->foil === 1;
-	}
-
-	/**
-	 * Marks this item as a durable.
-	 *
-	 * @param bool $durable
-	 * @param int  $maxDurability
-	 *
-	 * @return void
-	 */
-	public function setDurable(bool $durable, int $maxDurability = 0) : void{
-		$this->durable = $durable;
-		if($this->durable){
-			$this->max_durability = $maxDurability;
-			$this->nbt->getCompoundTag("components")?->setTag("minecraft:durability", CompoundTag::create()
-				->setTag("damage_chance", CompoundTag::create()
-					->setInt("min", 100) // maybe make this a config value
-					->setInt("max", 100) // maybe make this a config value
-				)
-				->setInt("max_durability", $maxDurability)
-			);
-		}
-	}
-
-	/**
-	 * Sets the max durability of the item.
-	 *
-	 * This does not automatically set the item component, use {@see setDurable()} for that
-	 *
-	 * @param int $max_durability
-	 *
-	 * @return void
-	 */
-	public function setMaxDurability(int $max_durability) : void{
-		$this->max_durability = $max_durability;
-	}
-
-	/**
-	 * Sets whether this item is equitable in the offhand slot.
-	 *
-	 * @param bool $allow_off_hand
-	 *
-	 * @return void
-	 */
-	public function setAllowOffhand(bool $allow_off_hand) : void{
-		$this->allow_off_hand = $allow_off_hand;
-		$this->nbt->getCompoundTag("components")?->getCompoundTag("item_properties")?->setByte("allow_off_hand", $allow_off_hand ? 1 : 0);
-	}
-
-	/**
-	 * Sets whether this item is displayed like sword. (usually this is used for swords, armors, or tools)
-	 *
-	 * @param bool $hand_equipped
-	 *
-	 * @return void
-	 */
-	public function setHandEquipped(bool $hand_equipped) : void{
-		$this->hand_equipped = $hand_equipped;
-		$this->nbt->getCompoundTag("components")?->getCompoundTag("item_properties")?->setByte("hand_equipped", $hand_equipped ? 1 : 0);
-	}
-
-	/**
-	 * Sets whether this item can break blocks in creative mode.
-	 *
-	 * @param bool $can_destroy_in_creative
-	 *
-	 * @return void
-	 */
-	public function setCanDestroyInCreative(bool $can_destroy_in_creative) : void{
-		$this->can_destroy_in_creative = $can_destroy_in_creative;
-		$this->nbt->getCompoundTag("components")?->getCompoundTag("item_properties")?->setByte("can_destroy_in_creative", $can_destroy_in_creative ? 1 : 0);
-	}
-
-	/**
-	 * Sets the creative category of this item.
-	 *
-	 * @param int $creative_category
-	 *
-	 * @return void
-	 */
-	public function setCreativeCategory(int $creative_category) : void{
-		$this->creative_category = $creative_category;
-		$this->nbt->getCompoundTag("components")?->getCompoundTag("item_properties")?->setInt("creative_category", $creative_category);
-	}
-
-	/**
-	 * Sets the mining speed of item
-	 *
-	 * @param float $mining_speed
-	 *
-	 * @return void
-	 */
-	public function setMiningSpeed(float $mining_speed) : void{
-		$this->mining_speed = $mining_speed;
-		$this->nbt->getCompoundTag("components")?->getCompoundTag("item_properties")?->setFloat("mining_speed", $mining_speed);
-	}
-
-	/**
-	 * Mark item as armor and set its slot.
-	 *
-	 * @param bool   $armor
-	 * @param string $armorClass
-	 * @param string $armorSlot
-	 *
-	 * @return void
-	 */
-	public function setArmor(bool $armor, string $armorClass, string $armorSlot) : void{
-		$this->armor = $armor;
-		$armor_slot_int = match ($armorSlot) {
-			"helmet" => ArmorInventory::SLOT_HEAD,
-			"chest" => ArmorInventory::SLOT_CHEST,
-			"leggings" => ArmorInventory::SLOT_LEGS,
-			"boots" => ArmorInventory::SLOT_FEET,
-			default => throw new InvalidArgumentException("Unknown armor slot $armorSlot given.")
-		};
-		$this->setArmorSlot($armor_slot_int);
-
-		static $acceptedArmorValues = ["gold", "none", "leather", "chain", "iron", "diamond", "elytra", "turtle", "netherite"];
-
-		static $armorSlotToStringMap = [
-//			"none",
-//			"slot.weapon.mainhand",
-//			"slot.weapon.offhand",
-			ArmorInventory::SLOT_HEAD => "slot.armor.head",
-			ArmorInventory::SLOT_CHEST => "slot.armor.chest",
-			ArmorInventory::SLOT_LEGS => "slot.armor.legs",
-			ArmorInventory::SLOT_FEET => "slot.armor.feet",
-//			"slot.hotbar",
-//			"slot.inventory",
-//			"slot.enderchest",
-//			"slot.saddle",
-//			"slot.armor",
-//			"slot.chest"
-		];
-		if(!in_array($armorClass, $acceptedArmorValues, true)){
-			throw new InvalidArgumentException("Armor class is invalid");
-		}
-		$this->nbt->getCompoundTag("components")?->setTag("minecraft:armor", CompoundTag::create()
-			->setString("texture_type", $armorClass)
-			->setInt("protection", 0)
-		);
-		$this->nbt->getCompoundTag("components")?->setTag("minecraft:wearable", CompoundTag::create()
-			->setString("slot", $armorSlotToStringMap[$armor_slot_int] ?? throw new AssumptionFailedError("Unknown armor slot type"))
-			->setByte("dispensable", 1)
-		);
-		/*
-		// TODO: find out what does this do
-		$this->nbt->getCompoundTag("components")?->getCompoundTag("item_properties")
-			?->setString("enchantable_slot", match($armor_slot){
-				"helmet" => "armor_helmet",
-				"chest" => "armor_torso",
-				"leggings" => "armor_legs",
-				"boots" => "armor_feet",
-				default => throw new AssumptionFailedError("Unknown armor type $armor_slot")
-			});
-
-		$this->nbt->getCompoundTag("components")?->getCompoundTag("item_properties")
-			?->setString("enchantable_value", "10");
-		*/
-	}
-
-	/**
-	 * Sets the slot of armor (0-3)
-	 *
-	 * This does not automatically set the item component, use {@see setArmor()} for that
-	 *
-	 * @param int $armorSlot
-	 *
-	 * @return void
-	 */
-	public function setArmorSlot(int $armorSlot) : void{
-		$this->armorSlot = $armorSlot;
-	}
-
-	/**
-	 * Sets the cooldown of the item
-	 *
-	 * @param int $cooldown
-	 *
-	 * @return void
-	 */
-	public function setCooldown(int $cooldown) : void{
-		$this->cooldown = $cooldown;
-		if($this->cooldown > 0){
-			$this->nbt->getCompoundTag("components")?->setTag("minecraft:cooldown", CompoundTag::create()
-				->setString("category", "attack")
-				->setFloat("duration", $this->cooldown / 20)
-			);
-		}
-	}
-
-	/**
-	 * Marks item as a foil.
-	 *
-	 * @param bool $foil
-	 *
-	 * @return void
-	 */
-	public function setFoil(bool $foil) : void{
-		$this->foil = $foil ? 1 : 0;
-
-		$this->nbt->getCompoundTag("components")?->getCompoundTag("item_properties")
-			?->setByte("foil", $foil ? 1 : 0);
-	}
-
-	/**
-	 * Marks item as food.
-	 *
-	 * @param bool  $food
-	 * @param int   $nutrition
-	 * @param float $saturation
-	 * @param bool  $canAlwaysEat
-	 *
-	 * @return void
-	 */
-	public function setFood(bool $food, int $nutrition = 0, float $saturation = 0, bool $canAlwaysEat = false) : void{
-		$this->food = $food;
-		if($this->food){
-			if($this->durable){
-				throw new AssumptionFailedError("Food cannot be durable");
-			}
-			$this->nbt->getCompoundTag("components")?->setTag("minecraft:food", CompoundTag::create()
-				->setByte("can_always_eat", $canAlwaysEat ? 1 : 0)
-				->setInt("nutrition", $nutrition)
-				->setFloat("saturation_modifier", 0.6)
-			);
-			$this->saturation = $saturation;
-			$this->nutrition = $nutrition;
-		}
-	}
-
-	/**
-	 * Sets the nutrition of the food item.
-	 *
-	 * This does not automatically set the item component, use {@see setFood()} for that
-	 *
-	 * @param int $nutrition
-	 *
-	 * @return void
-	 */
-	public function setNutrition(int $nutrition) : void{
-		$this->nutrition = $nutrition;
-	}
-
-	/**
-	 * Sets the saturation of the food item.
-	 *
-	 * This does not automatically set the item component, use {@see setFood()} for that
-	 *
-	 * @param float $saturation
-	 *
-	 * @return void
-	 */
-	public function setSaturation(float $saturation) : void{
-		$this->saturation = $saturation;
-	}
-
-	/**
-	 * Sets whether the food item can be eaten even on the max saturation.
-	 *
-	 * This does not automatically set the item component, use {@see setFood()} for that
-	 *
-	 * @param bool $can_always_eat
-	 *
-	 * @return void
-	 */
-	public function setCanAlwaysEat(bool $can_always_eat) : void{
-		$this->can_always_eat = $can_always_eat;
-	}
-
-	/**
-	 * Sets the residue of the food item.
-	 *
-	 * @param Item $residue
-	 *
-	 * @return void
-	 */
-	public function setResidue(Item $residue) : void{
-		$this->residue = $residue;
-	}
-
-	/**
-	 * Sets the defence point of the item.
-	 *
-	 * @param int $defence_points
-	 *
-	 * @return void
-	 */
-	public function setDefencePoints(int $defence_points) : void{
-		$this->defence_points = $defence_points;
 	}
 
 	/**
@@ -659,93 +419,16 @@ final class CustomItemProperties{
 		$this->attack_points = $attack_points;
 	}
 
-	/**
-	 * Sets the render offsets of item
-	 *
-	 * Usually used to manually set the render offset when item texture is not following official minecraft PNG size.
-	 *
-	 * @param int $pngSize
-	 *
-	 * @return void
-	 */
-	public function setRenderOffsets(int $pngSize) : void{
-		[$x, $y, $z] = $this->calculateOffset($pngSize);
-		// TODO: Find out rotation and position formula
-		$this->nbt->getCompoundTag("components")?->setTag("minecraft:render_offsets", CompoundTag::create()
-			->setTag("main_hand", CompoundTag::create()
-				->setTag("first_person", CompoundTag::create()
-					->setTag("scale", new ListTag([
-						new FloatTag($x),
-						new FloatTag($y),
-						new FloatTag($z)
-					]))
-				)
-				->setTag("third_person", CompoundTag::create()
-					->setTag("scale", new ListTag([
-						new FloatTag($x),
-						new FloatTag($y),
-						new FloatTag($z)
-					]))
-				)
-			)
-			->setTag("off_hand", CompoundTag::create()
-				->setTag("first_person", CompoundTag::create()
-					->setTag("scale", new ListTag([
-						new FloatTag($x),
-						new FloatTag($y),
-						new FloatTag($z)
-					]))
-				)
-				->setTag("third_person", CompoundTag::create()
-					->setTag("scale", new ListTag([
-						new FloatTag($x),
-						new FloatTag($y),
-						new FloatTag($z)
-					]))
-				)
-			)
-		);
-	}
-
-	private function setMaxStackSize(int $max_stack_size) : void{
-		$this->max_stack_size = $max_stack_size;
-		$this->nbt->getCompoundTag("components")?->getCompoundTag("item_properties")
-			->setInt("max_stack_size", $max_stack_size);
-	}
-
-	public static function withoutData() : CustomItemProperties{
-		$class = new ReflectionClass(self::class);
-		/** @var CustomItemProperties $newInstance */
-		$newInstance = $class->newInstanceWithoutConstructor();
-		return $newInstance;
-	}
-
-	private function calculateOffset(int $size) : array{
-		if(!$this->hand_equipped){
-			[$x, $y, $z] = [0.075, 0.125, 0.075];
-		}else{
-			[$x, $y, $z] = [0.1, 0.1, 0.1];
+	public function getNbt(bool $rebuild = false) : CompoundTag{
+		if($rebuild){
+			$this->rootNBT = CompoundTag::create()
+				->setTag(Component::TAG_COMPONENTS, CompoundTag::create());
+			$components = $this->components;
+			$this->components = [];
+			foreach($components as $name => $component){
+				$this->addComponent($component);
+			}
 		}
-		$newX = $x / ($size / 16);
-		$newY = $y / ($size / 16);
-		$newZ = $z / ($size / 16);
-		return [$newX, $newY, $newZ];
-	}
-
-	private function buildBaseComponent(string $texture, string $namespace, int $runtimeId, string $name) : void{
-		$this->nbt = CompoundTag::create()
-			->setTag("components", CompoundTag::create()
-				->setTag("minecraft:display_name", CompoundTag::create()
-					->setString("value", $name)
-				)
-				->setTag("item_properties", CompoundTag::create()
-					->setInt("use_duration", 32)
-					->setTag("minecraft:icon", CompoundTag::create()
-						->setString("texture", $texture)
-						->setString("legacy_id", $namespace)
-					)
-				)
-			)
-			->setShort("minecraft:identifier", $runtimeId);
+		return $this->rootNBT;
 	}
 }

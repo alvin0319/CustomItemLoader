@@ -16,24 +16,25 @@
 
 declare(strict_types=1);
 
-namespace alvin0319\CustomItemLoader\item;
+namespace alvin0319\CustomItemLoader\item\properties\component;
 
-use pocketmine\block\Block;
-use pocketmine\entity\Entity;
-use pocketmine\item\Durable;
+use pocketmine\nbt\tag\CompoundTag;
 
-class CustomDurableItem extends Durable{
-	use CustomItemTrait;
+/**
+ * This component tells the client which item it is.
+ * It is essential for the client to render the item correctly.
+ */
+final class IdentifierComponent extends Component{
 
-	public function getMaxDurability() : int{
-		return $this->getProperties()->getMaxDurability();
+	public const TAG_IDENTIFIER = "minecraft:identifier";
+
+	public function __construct(private readonly int $runtimeId){}
+
+	public function getName() : string{
+		return "identifier";
 	}
 
-	public function onDestroyBlock(Block $block, array &$returnedItems) : bool{
-		return $this->applyDamage(1);
-	}
-
-	public function onAttackEntity(Entity $victim, array &$returnedItems) : bool{
-		return $this->applyDamage(1);
+	public function processComponent(CompoundTag $rootNBT) : void{
+		$rootNBT->setShort(self::TAG_IDENTIFIER, $this->runtimeId);
 	}
 }
