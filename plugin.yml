@@ -7,9 +7,6 @@ api: 5.0.0
 extensions:
   Core: ">=8.1"
 
-depend:
-  - libItemRegistrar
-
 permissions:
   customitemloader.command.rsc:
     default: op

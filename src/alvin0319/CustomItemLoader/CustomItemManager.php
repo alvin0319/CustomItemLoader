@@ -1,5 +1,8 @@
 <?php
 
+/* @noinspection PhpUndefinedFieldInspection */
+/* @noinspection PhpUndefinedMethodInspection */
+
 /*
  *    ____          _                  ___ _                 _                    _
  *   / ___|   _ ___| |_ ___  _ __ ___ |_ _| |_ ___ _ __ ___ | |    ___   __ _  __| | ___ _ __
@@ -26,15 +29,21 @@ use alvin0319\CustomItemLoader\item\CustomItemTrait;
 use alvin0319\CustomItemLoader\item\CustomToolItem;
 use alvin0319\CustomItemLoader\item\properties\CustomItemProperties;
 use alvin0319\libItemRegistrar\libItemRegistrar;
+use pocketmine\data\bedrock\item\SavedItemData;
 use pocketmine\item\Item;
-use pocketmine\network\mcpe\convert\GlobalItemTypeDictionary;
+use pocketmine\item\StringToItemParser;
+use pocketmine\network\mcpe\convert\TypeConverter;
 use pocketmine\network\mcpe\protocol\ItemComponentPacket;
 use pocketmine\network\mcpe\protocol\types\CacheableNbt;
 use pocketmine\network\mcpe\protocol\types\ItemComponentPacketEntry;
 use pocketmine\network\mcpe\protocol\types\ItemTypeEntry;
 use pocketmine\utils\SingletonTrait;
+use pocketmine\utils\Utils;
+use pocketmine\world\format\io\GlobalItemDataHandlers;
 use ReflectionProperty;
 use Throwable;
+use function str_replace;
+use function strtolower;
 
 final class CustomItemManager{
 	use SingletonTrait;
@@ -82,7 +91,7 @@ final class CustomItemManager{
 
 			$new = clone $item;
 
-			libItemRegistrar::getInstance()->registerItem($new, $runtimeId, true, $item->getProperties()->getNamespace());
+			$this->internalRegisterItem($new, $runtimeId, true, $item->getProperties()->getNamespace());
 		}catch(Throwable $e){
 			throw new \InvalidArgumentException("Failed to register item: " . $e->getMessage(), $e->getLine(), $e);
 		}
@@ -118,5 +127,55 @@ final class CustomItemManager{
 			return new CustomToolItem($name, $prop);
 		}
 		return new CustomItem($name, $prop);
+	}
+
+	/**
+	 * @param Item          $item the Item to register
+	 * @param int           $runtimeId the runtime id that will be used by the server to send the item to the player.
+	 * This usually can be found using BDS, or included in {@link \pocketmine\BEDROCK_DATA_PATH/required_item_list.json}. for custom items, you should generate this manually.
+	 * @param bool          $force
+	 * @param string        $namespace the item's namespace. This usually can be found in {@link ItemTypeNames}.
+	 * @param \Closure|null $serializeCallback the callback that will be used to serialize the item.
+	 * @param \Closure|null $deserializeCallback the callback that will be used to deserialize the item.
+	 *
+	 * @return void
+	 * @see ItemTypeDictionaryFromDataHelper
+	 * @see libItemRegistrar::getRuntimeIdByName()
+	 */
+	public function internalRegisterItem(Item $item, int $runtimeId, bool $force = false, string $namespace = "", ?\Closure $serializeCallback = null, ?\Closure $deserializeCallback = null) : void{
+		if($serializeCallback !== null){
+			/** @phpstan-ignore-next-line */
+			Utils::validateCallableSignature(static function(Item $item) : SavedItemData{ }, $serializeCallback);
+		}
+		if($deserializeCallback !== null){
+			Utils::validateCallableSignature(static function(SavedItemData $data) : Item{ }, $deserializeCallback);
+		}
+
+		StringToItemParser::getInstance()->override($item->getName(), static fn() => clone $item);
+		$serializer = GlobalItemDataHandlers::getSerializer();
+		$deserializer = GlobalItemDataHandlers::getDeserializer();
+
+		$namespace = $namespace === "" ? "minecraft:" . strtolower(str_replace(" ", "_", $item->getName())) : $namespace;
+
+		// TODO: Closure hack to access ItemSerializer
+		// ItemSerializer throws an Exception when we try to register a pre-existing item
+		(function() use ($item, $serializeCallback, $namespace) : void{
+			$this->itemSerializers[$item->getTypeId()] = $serializeCallback !== null ? $serializeCallback : static fn() => new SavedItemData($namespace);
+		})->call($serializer);
+		// TODO: Closure hack to access ItemDeserializer
+		// ItemDeserializer throws an Exception when we try to register a pre-existing item
+		(function() use ($item, $deserializeCallback, $namespace) : void{
+			if(isset($this->deserializers[$item->getName()])){
+				unset($this->deserializers[$item->getName()]);
+			}
+			$this->map($namespace, $deserializeCallback !== null ? $deserializeCallback : static fn(SavedItemData $_) => clone $item);
+		})->call($deserializer);
+
+		$dictionary = TypeConverter::getInstance()->getItemTypeDictionary();
+		(function() use ($item, $runtimeId, $namespace) : void{
+			$this->stringToIntMap[$namespace] = $runtimeId;
+			$this->intToStringIdMap[$runtimeId] = $namespace;
+			$this->itemTypes[] = new ItemTypeEntry($namespace, $runtimeId, true);
+		})->call($dictionary);
 	}
 }
