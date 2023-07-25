@@ -37,7 +37,7 @@ final class ArmorComponent extends Component{
 	public function __construct(
 		private readonly string $armorClass,
 		private readonly int $armorSlot,
-        private readonly int $defensePoints
+		private readonly int $defensePoints
 	){
 		static $acceptedArmorValues = ["gold", "none", "leather", "chain", "iron", "diamond", "elytra", "turtle", "netherite"];
 		if(!in_array($armorClass, $acceptedArmorValues, true)){
