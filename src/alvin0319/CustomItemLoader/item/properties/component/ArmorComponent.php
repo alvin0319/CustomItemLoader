@@ -36,7 +36,8 @@ final class ArmorComponent extends Component{
 	 */
 	public function __construct(
 		private readonly string $armorClass,
-		private readonly int $armorSlot
+		private readonly int $armorSlot,
+        private readonly int $defensePoints
 	){
 		static $acceptedArmorValues = ["gold", "none", "leather", "chain", "iron", "diamond", "elytra", "turtle", "netherite"];
 		if(!in_array($armorClass, $acceptedArmorValues, true)){
@@ -73,7 +74,7 @@ final class ArmorComponent extends Component{
 		$armorNBT = $componentNBT->getCompoundTag(self::TAG_ARMOR);
 		$wearableNBT = $componentNBT->getCompoundTag(self::TAG_WEARABLE);
 		$armorNBT->setString("texture_type", $this->armorClass);
-		$armorNBT->setInt("protection", 0);
+		$armorNBT->setInt("protection", $this->defensePoints);
 
 		static $armorInfoIntToStringMap = [
 			ArmorInventory::SLOT_HEAD => "slot.armor.head",
