@@ -181,7 +181,7 @@ final class CustomItemProperties{
 				throw new InvalidArgumentException("Armor item must have defence_points, armor_slot, and armor_class");
 			}
 //			$this->setArmor(true, $data["armor_class"], $data["armor_slot"]);
-			$this->defence_points = (int)$data["defence_points"];
+			$this->defence_points = (int) $data["defence_points"];
 			$armor_slot_int = match ($data["armor_slot"]) {
 				"helmet" => ArmorInventory::SLOT_HEAD,
 				"chest" => ArmorInventory::SLOT_CHEST,
