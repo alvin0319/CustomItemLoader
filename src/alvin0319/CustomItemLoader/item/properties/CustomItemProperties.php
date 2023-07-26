@@ -181,7 +181,7 @@ final class CustomItemProperties{
 				throw new InvalidArgumentException("Armor item must have defence_points, armor_slot, and armor_class");
 			}
 //			$this->setArmor(true, $data["armor_class"], $data["armor_slot"]);
-//			$this->setDefencePoints($data["defence_points"]);
+			$this->defence_points = (int) $data["defence_points"];
 			$armor_slot_int = match ($data["armor_slot"]) {
 				"helmet" => ArmorInventory::SLOT_HEAD,
 				"chest" => ArmorInventory::SLOT_CHEST,
@@ -189,7 +189,8 @@ final class CustomItemProperties{
 				"boots" => ArmorInventory::SLOT_FEET,
 				default => throw new InvalidArgumentException("Unknown armor slot {$data["armor_slot"]} given.")
 			};
-			$this->addComponent(new ArmorComponent($data["armor_class"], $armor_slot_int)); // TODO: defence points
+			$this->addComponent(new ArmorComponent($data["armor_class"], $armor_slot_int, $this->getDefencePoints()));
+			$this->armor = true;
 		}
 		if(isset($data["foil"])){
 //			$this->setFoil($data["foil"]);
