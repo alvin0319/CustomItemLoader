@@ -82,7 +82,7 @@ final class ItemPropertiesComponent extends Component{
 	 */
 	public function setIcon(string $iconPath, string $legacyId) : void{
 		$this->addComponent(self::TAG_ICON, CompoundTag::create()
-			->setString("texture", $iconPath)
+			->setTag("textures", CompoundTag::create()->setString("default", $iconPath))
 			->setString("legacy_id", $legacyId)
 		);
 	}
