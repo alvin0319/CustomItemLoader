@@ -32,19 +32,15 @@ final class DisplayNameComponent extends Component{
 	public function __construct(private readonly string $displayName){ }
 
 	public function getName() : string{
-		return "texture";
+		return "display_name";
 	}
 
 	public function buildComponent(CompoundTag $rootNBT) : void{
-		$componentTag = $rootNBT->getCompoundTag(Component::TAG_COMPONENTS);
-		if($componentTag === null){
-			throw new InvalidNBTStateException("Component tree is not built");
-		}
-		$componentTag->setTag(self::TAG_DISPLAY_NAME, CompoundTag::create());
+        	$rootNBT->setTag(self::TAG_DISPLAY_NAME, CompoundTag::create());
 	}
 
 	public function processComponent(CompoundTag $rootNBT) : void{
-		$displayNameTag = $rootNBT->getCompoundTag(Component::TAG_COMPONENTS)?->getCompoundTag(self::TAG_DISPLAY_NAME);
+        	$displayNameTag = $rootNBT->getCompoundTag(self::TAG_DISPLAY_NAME);
 		if($displayNameTag === null){
 			throw new InvalidNBTStateException("Component tree is not built");
 		}
