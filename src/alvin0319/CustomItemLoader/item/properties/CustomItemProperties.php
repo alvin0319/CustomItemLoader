@@ -27,7 +27,6 @@ use alvin0319\CustomItemLoader\item\properties\component\DurableComponent;
 use alvin0319\CustomItemLoader\item\properties\component\FoodComponent;
 use alvin0319\CustomItemLoader\item\properties\component\IdentifierComponent;
 use alvin0319\CustomItemLoader\item\properties\component\ItemPropertiesComponent;
-use alvin0319\CustomItemLoader\item\properties\component\RenderOffsetsComponent;
 use InvalidArgumentException;
 use pocketmine\block\BlockToolType;
 use pocketmine\data\bedrock\item\upgrade\LegacyItemIdToStringIdMap;
@@ -216,18 +215,6 @@ final class CustomItemProperties{
 			}
 //			$this->setDurable($data["durable"], $data["max_durability"]);
 			$this->addComponent(new DurableComponent($data["max_durability"]));
-		}
-		if(isset($data["render_offset"])){
-			$x = 16;
-			$y = 16;
-			if(isset($data["render_offset"]["x"]) && isset($data["render_offset"]["y"])){
-				$x = $data["render_offset"]["x"];
-				$y = $data["render_offset"]["y"];
-			}elseif(isset($data["render_offset"]["size"])){
-				$x = $data["render_offset"]["size"];
-				$y = $data["render_offset"]["size"];
-			}
-			$this->addComponent(new RenderOffsetsComponent($x, $y, $handEquipped));
 		}
 		if(isset($data["cooldown"]) && is_numeric($data["cooldown"])){
 //			$this->setCooldown($data["cooldown"]);

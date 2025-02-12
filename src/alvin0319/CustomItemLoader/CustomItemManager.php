@@ -28,14 +28,13 @@ use alvin0319\CustomItemLoader\item\CustomItem;
 use alvin0319\CustomItemLoader\item\CustomItemTrait;
 use alvin0319\CustomItemLoader\item\CustomToolItem;
 use alvin0319\CustomItemLoader\item\properties\CustomItemProperties;
-use alvin0319\libItemRegistrar\libItemRegistrar;
 use pocketmine\data\bedrock\item\SavedItemData;
 use pocketmine\item\Item;
 use pocketmine\item\StringToItemParser;
+use pocketmine\nbt\tag\CompoundTag;
 use pocketmine\network\mcpe\convert\TypeConverter;
-use pocketmine\network\mcpe\protocol\ItemComponentPacket;
+use pocketmine\network\mcpe\protocol\ItemRegistryPacket;
 use pocketmine\network\mcpe\protocol\types\CacheableNbt;
-use pocketmine\network\mcpe\protocol\types\ItemComponentPacketEntry;
 use pocketmine\network\mcpe\protocol\types\ItemTypeEntry;
 use pocketmine\utils\SingletonTrait;
 use pocketmine\utils\Utils;
@@ -50,13 +49,6 @@ final class CustomItemManager{
 
 	/** @var Item[] */
 	private array $registered = [];
-
-	private ItemComponentPacket $packet;
-
-	private ReflectionProperty $itemTypeMap;
-
-	/** @var ItemComponentPacketEntry[] */
-	private array $packetEntries = [];
 	/** @var ItemTypeEntry[] */
 	private array $itemTypeEntries = [];
 
@@ -83,9 +75,13 @@ final class CustomItemManager{
 		try{
 			$runtimeId = $item->getProperties()->getRuntimeId();
 
-			$this->itemTypeEntries[] = new ItemTypeEntry($item->getProperties()->getNamespace(), $runtimeId, true);
-
-			$this->packetEntries[] = new ItemComponentPacketEntry($item->getProperties()->getNamespace(), new CacheableNbt($item->getProperties()->getNbt()));
+			$this->itemTypeEntries[] = new ItemTypeEntry(
+				$item->getProperties()->getNamespace(),
+				$runtimeId,
+				true,
+				1,// 0: legacy, 1: data driven, 2: None (???)
+				new CacheableNbt($item->getProperties()->getNbt(true))
+			);
 
 			$this->registered[] = $item;
 
@@ -97,12 +93,11 @@ final class CustomItemManager{
 		}
 	}
 
-	private function refresh() : void{
-		$this->packet = ItemComponentPacket::create($this->packetEntries);
+	public function getEntries() : array{
+		return $this->itemTypeEntries;
 	}
 
-	public function getPacket() : ItemComponentPacket{
-		return clone $this->packet;
+	private function refresh() : void{
 	}
 
 	public function registerDefaultItems(array $data) : void{
@@ -175,7 +170,9 @@ final class CustomItemManager{
 		(function() use ($item, $runtimeId, $namespace) : void{
 			$this->stringToIntMap[$namespace] = $runtimeId;
 			$this->intToStringIdMap[$runtimeId] = $namespace;
-			$this->itemTypes[] = new ItemTypeEntry($namespace, $runtimeId, true);
+			// if item uses an CustomItemTrait, use nbt from there otherwise empty
+			$nbt = in_array(CustomItemTrait::class, class_uses($item), true) ? $item->getProperties()->getNbt() : CompoundTag::create();
+			$this->itemTypes[] = new ItemTypeEntry($namespace, $runtimeId, true, 1, new CacheableNbt($nbt));
 		})->call($dictionary);
 	}
 }
