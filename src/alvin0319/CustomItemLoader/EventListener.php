@@ -21,8 +21,6 @@ namespace alvin0319\CustomItemLoader;
 use pocketmine\event\Listener;
 use pocketmine\event\player\PlayerQuitEvent;
 use pocketmine\event\server\DataPacketSendEvent;
-use pocketmine\network\mcpe\protocol\BiomeDefinitionListPacket;
-use pocketmine\network\mcpe\protocol\ItemRegistryPacket;
 use pocketmine\network\mcpe\protocol\ResourcePackStackPacket;
 use pocketmine\network\mcpe\protocol\StartGamePacket;
 use pocketmine\network\mcpe\protocol\types\Experiments;
@@ -44,10 +42,6 @@ final class EventListener implements Listener{
 				$packet->experiments = new Experiments([
 					"data_driven_items" => true
 				], true);
-			}elseif($packet instanceof ItemRegistryPacket){
-				(function() : void{
-					$this->entries = array_merge($this->entries, CustomItemManager::getInstance()->getEntries());
-				})->call($packet);
 			}
 		}
 	}
