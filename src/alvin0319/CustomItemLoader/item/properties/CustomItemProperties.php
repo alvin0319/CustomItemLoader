@@ -157,7 +157,8 @@ final class CustomItemProperties{
 			$itemPropertiesComponent->addComponent("hand_equipped", $trueTag);
 		}
 		if(isset($data["max_stack_size"])){
-			$itemPropertiesComponent->addComponent("max_stack_size", new IntTag($data["max_stack_size"]));
+			$this->max_stack_size = (int)$data["max_stack_size"];
+			$itemPropertiesComponent->addComponent("max_stack_size", new IntTag($this->max_stack_size));
 		}
 //		if(isset($data["mining_speed"])){
 //			$this->setMiningSpeed($data["mining_speed"]);

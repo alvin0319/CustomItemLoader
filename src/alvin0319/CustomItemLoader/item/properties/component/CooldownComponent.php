@@ -48,6 +48,6 @@ final class CooldownComponent extends Component{
 			throw new InvalidNBTStateException("Component tree is not built");
 		}
 		$cooldownTag->setString("category", "attack"); // TODO: Find out this
-		$cooldownTag->setFloat("value", $this->cooldown / 20); // maybe in tick
+		$cooldownTag->setFloat("duration", $this->cooldown / 20); // maybe in tick
 	}
 }
